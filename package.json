@@ -1,0 +1,23 @@
+{
+  "name": "jjollaejjollae",
+  "version": "1.0.0",
+  "description": "jjollaejjollae api server",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PET-P/jjollaejjollae_nodejs.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PET-P/jjollaejjollae_nodejs/issues"
+  },
+  "homepage": "https://github.com/PET-P/jjollaejjollae_nodejs#readme",
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1"
+  }
+}

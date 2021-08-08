@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
+const logger = require('morgan');
 
 const {PORT,MONGO_URI} = process.env;
 app = express();
@@ -19,6 +20,7 @@ mongoose
   .then(() => console.log('Successfully connected to mongodb'))
   .catch(err => console.error(err));
 
+app.use(logger('dev'));
 app.use('/api',require('./api'));
 app.get('/', (req, res) => res.send('!!!HELLO JJOLLAE!!!'));
 

@@ -50,7 +50,7 @@ const userSchema = new Schema({
     type: String,
     required: true,
     trim: true,
-    // select: false
+    select: false
   },
   nick: {
     type:String,
@@ -65,18 +65,25 @@ const userSchema = new Schema({
     required:true,
     default:false
   },
-  created_at:{
-    type:Date,
-    required:true,
-    default:Date.now()
-  },
-  updated_at:{
-    type:Date,
-    required:true,
-    default:Date.now()
-  },
+  // created_at:{
+  //   type:Date,
+  //   required:true,
+  //   default:Date.now()
+  // },
+  // updated_at:{
+  //   type:Date,
+  //   required:true,
+  //   default:Date.now()
+  // },
   pets: [petSchema], // petSchema 추가 필요
-});
+},
+{
+  timestamps:{
+    createdAt: 'created_at',
+    updatedAt: 'updated_at'
+  }
+}
+);
 
 userSchema.pre('save', function (next) {
   let user = this;

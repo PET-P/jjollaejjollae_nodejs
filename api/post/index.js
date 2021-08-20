@@ -1,17 +1,15 @@
 const express = require("express");
 const router = express.Router();
 const postController = require("./post");
-const postImageController = require("./image");
+const image = require('../../middleware/image')
 
 const multer = require('multer');
-const upload = multer({storage: multer.memoryStorage()})
+const upload = multer({ storage: multer.memoryStorage() })
 
-router.post("", upload.single('image'), postController.postCreate);
+router.post("", upload.single('image'), image.saveImage, postController.postCreate);
 router.get("", postController.postList);
-router.get("/image", postImageController.postImageList);
 router.get("/:id", postController.postRead);
-router.get("/image/:id", postImageController.postImageRead);
 router.patch("/:id", postController.postUpdate);
-router.delete("/:id", postController.postDelete);
+router.delete("/:id", postController.postDelete, image.deleteImage);
 
 module.exports = router;

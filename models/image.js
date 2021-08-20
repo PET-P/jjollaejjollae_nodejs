@@ -2,17 +2,17 @@ const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 
-const postImageSchema = new Schema({
+const imageSchema = new Schema({
   image: Buffer,
 });
 
-const PostImage = mongoose.model('PostImage', postImageSchema);
+const Image = mongoose.model('Image', imageSchema);
 
-// PostImage.createNewInstance = async (img)=>{
+// Image.createNewInstance = async (img)=>{
 //   try{
 //     const img = req.file.buffer;
 //     if(img.truncated) return res.status(413);
-//     const image = new PostImage({ image:img });
+//     const image = new Image({ image:img });
 //     console.log.image(img)
 //     await image.save();
 //     req.body.image_url = `/api/posts/image/${image._id}`
@@ -20,4 +20,4 @@ const PostImage = mongoose.model('PostImage', postImageSchema);
 //     return res.status(500);
 //   }
 // }
-module.exports = PostImage;
+module.exports = Image;

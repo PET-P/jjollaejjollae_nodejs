@@ -1,20 +1,8 @@
 const Post = require("../../models/post");
-const PostImage = require("../../models/post_image");
 
 module.exports = {
   postCreate: async (req, res) => {
-    try{
-      const img = req.file.buffer;
-      if(img.truncated) return res.status(413);
-
-      const image = await PostImage.create({image:img})
-      await image.save();
-      req.body.image_id = image._id
-    } catch (e) {
-      return res.status(500);
-    }
     const post = new Post(req.body);
-    
     try {
       await post.save((err, doc) => {
         if (err) {
@@ -108,7 +96,7 @@ module.exports = {
       });
     }
   },
-  postDelete: async (req, res) => {
+  postDelete: async (req, res,next) => {
     const id = req.params.id;
 
     try {
@@ -120,16 +108,18 @@ module.exports = {
           message: "존재하지 않는 게시물"
         });      
       }
+
       if (!post.image_id){
-        await PostImage.deleteOne(post.image_id);
+        return res.status(200).json({
+          success: true,
+          message: "게시물 삭제 성공"
+        });
       }
 
-      res.status(200).json({
-        success: true,
-        message: "게시물 삭제 성공"
-      });
+      req.image_id = post.image_id
+      next();
     } catch (e) {
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         error:e
       });

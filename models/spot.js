@@ -14,6 +14,7 @@ const spotSchema = new Schema({
   top_review: [],
   phone: { type: String, required: true },
   icons: [String],
+  image_id: { type: Schema.Types.ObjectId },
 },
   { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } }
 );

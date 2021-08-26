@@ -3,6 +3,7 @@ const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const { sign, verify, refresh, refreshVerify } = require('../../middlewares/jwt');
 const redisClient = require('../../middlewares/redis');
+const { sendCode } = require('../../middlewares/nodemailer');
 
 module.exports = {
   authLogin: async (req, res) => {
@@ -82,7 +83,7 @@ module.exports = {
 
         // 디코딩 결과가 없으면 권한이 없음을 응답.
         if (decoded === null) {
-          res.status(400).send({
+          return res.status(400).send({
             success: false,
             message: '잘못된 접근입니다.',
           });
@@ -101,8 +102,8 @@ module.exports = {
             });
           } else {
             // 2. access token이 만료되고, refresh token은 만료되지 않은 경우 => 새로운 access token을 발급
-            const newAccessToken = sign({email:decoded.email,admin:decoded.admin});
-            if (jwt.decode(refreshToken).exp - parseInt(Date.now()/1000) < 7*24*3600){ //refreshToken 유효시간 7일이내
+            const newAccessToken = sign({ email: decoded.email, admin: decoded.admin });
+            if (jwt.decode(refreshToken).exp - parseInt(Date.now() / 1000) < 7 * 24 * 3600) { //refreshToken 유효시간 7일이내
               refreshToken = refresh()
             }
             res.status(200).send({ // 새로 발급한 access token과 원래 있던 refresh token 모두 클라이언트에게 반환합니다.
@@ -128,6 +129,39 @@ module.exports = {
         error: e
       });
     }
+  },
+  findPassword: async (req, res) => {
+    try {
+
+      const email = req.body.email;
+      const user = await User.findOne({ email: email });
+
+      if (!user) {
+        res.status(404).json({
+          success: false,
+          message: '존재하지 않는 사용자입니다.'
+        })
+      }
+      else {
+        let code = Math.random().toString().substr(2, 6);
+        let result = await sendCode(code, email)
+        console.log(result)
+        if (result) {
+          // user.code = code
+          console.log(code)
+          await User.findOneAndUpdate({_id:user._id},{code:code})
+          // await user.save()
+        }
+        res.status(200).json({
+          success: true,
+          message: '인증코드가 메일로 발송되었습니다.'
+        })
+      }
+    } catch (e) {
+      console.log(e)
+      res.status(500)
+    }
   }
+
 }
 

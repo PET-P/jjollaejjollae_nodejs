@@ -10,5 +10,6 @@ const authController = require("./auth");
 router.post('', authController.authLogin);
 router.post('/email', authController.authEmail);
 router.get('', authController.authToken);
+router.post('/password', authController.findPassword)
 
 module.exports = router;

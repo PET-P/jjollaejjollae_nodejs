@@ -7,13 +7,14 @@ module.exports = {
     try {
       await user.save((err, doc) => {
         if (err) {
+          console.log(err)
           return res.status(500).json({
             success: false,
             error: err
           });
         }
+        console.log(doc)
       });
-
       res.status(200).json({
         success: true,
         message: "회원가입 성공",

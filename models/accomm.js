@@ -13,8 +13,10 @@ const accommSchema = new Schema({
   review_count: { type: Number, default: 0 },
   top_review: [],
   phone: { type: String, required: true },
-  icons: [String],
   image_id: { type: Schema.Types.ObjectId },
+  types: [String],
+  pet_facilities: [String],
+  facilities: [String],
 },
   { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } }
 );

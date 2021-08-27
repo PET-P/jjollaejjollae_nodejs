@@ -31,11 +31,13 @@ module.exports = {
       };
     }
   },
-  refresh: () => { // refresh token 발급
-    return jwt.sign({}, SECRET, { // refresh token은 payload 없이 발급
+  refresh: (email) => { // refresh token 발급
+    refreshToken = jwt.sign({}, SECRET, { // refresh token은 payload 없이 발급
       algorithm: OPTION_ALGO,
       expiresIn: OPTION_REFRESH_EXPI,
     });
+    redisClient.set(email, refreshToken);
+    return refreshToken
   },
   refreshVerify: async (token, userEmail) => { // refresh token 검증
     /* redis 모듈은 기본적으로 promise를 반환하지 않으므로,

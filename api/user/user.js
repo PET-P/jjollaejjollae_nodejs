@@ -1,4 +1,5 @@
 const User = require("../../models/user");
+const { sign, refresh } = require('../../middlewares/jwt');
 
 module.exports = {
   userCreate: async (req, res) => {
@@ -13,15 +14,19 @@ module.exports = {
             error: err
           });
         }
-        console.log(doc)
-      });
-      res.status(200).json({
-        success: true,
-        message: "회원가입 성공",
-        data: {
-          _id: user._id,
-          access_token: "eyJhbGciOiJIUzI1NiJ9.NjBlMTgwNmUxNDkwYmU1NGIwYjI3ODIx.Uq4eRDZPzYwSB6Ly5aH0kPvFCWleuxaHRAn7jSE1DbE",
-          refresh_token: "eyJhbGciOiJIUzI1NiJ9.NjBlMTgwNmUxNDkwYmU1NGIwYjI3ODIx.Uq4eRDZPzYwSB6Ly5aH0kPvFCWleuxaHRAn7jSE1DbE"
+        else{
+          let accessToken = sign(user);
+          let refreshToken = refresh(user.email);
+
+          return res.status(200).json({
+            success: true,
+            message: "회원가입 성공",
+            data: {
+              _id: user._id,
+              access_token: accessToken,
+              refresh_token: refreshToken
+            }
+          });
         }
       });
     } catch (e) {

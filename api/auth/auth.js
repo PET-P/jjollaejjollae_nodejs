@@ -2,7 +2,7 @@ const User = require('../../models/user');
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const { sign, verify, refresh, refreshVerify } = require('../../middlewares/jwt');
-// const redisClient = require('../../middlewares/redis');
+const crypto = require('crypto'); //내장 모듈이라 따로 설치 안해주셔도 됩니다!!
 const { sendCode } = require('../../middlewares/nodemailer');
 
 module.exports = {
@@ -151,21 +151,62 @@ module.exports = {
         let result = await sendCode(code, email)
         console.log(result)
         if (result) {
-          // user.code = code
           console.log(code)
           await User.findOneAndUpdate({ _id: user._id }, { code: code })
-          // await user.save()
+          res.status(200).json({
+            success: true,
+            message: '인증코드가 메일로 발송되었습니다.'
+          })
         }
-        res.status(200).json({
-          success: true,
-          message: '인증코드가 메일로 발송되었습니다.'
-        })
       }
     } catch (e) {
       console.log(e)
-      res.status(500)
+      res.status(500).json({
+        success: false,
+        error: e
+      });
+    }
+  },
+  checkCode: async (req, res) => {
+    try {
+      let email = req.query.email
+      let code = req.query.code
+
+      const user = await User.findOne({ email: email },).select('+code').lean()
+      if(user){
+        if(user.code === code){
+          let key_one=crypto.randomBytes(256).toString('hex').substr(100, 5);
+          let key_two=crypto.randomBytes(256).toString('base64').substr(50, 5);
+          let tempPassword=key_one+key_two; //우리가 사용할 인증코드
+          await User.findByIdAndUpdate(user._id, {password:tempPassword}, {
+            new: true,
+            runValidators: true,
+          });
+          res.status(200).json({
+            success:true,
+            message:'임시비밀번호가 발급되었습니다.',
+            tempPassword: tempPassword
+          })
+        }
+        else{
+          res.status(400).json({
+            success:false,
+            massage: '발급코드가 틀렸습니다.'
+          })
+        }
+      }else{
+        res.status(500).json({
+          success: false,
+          message: '유저가 없습니다?'
+        });
+      }
+    } catch (e) {
+      console.log(e)
+      res.status(500).json({
+        success: false,
+        error: e
+      });
     }
   }
-
 }
 

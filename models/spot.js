@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const spotSchema = new Schema({
+  category:{type:String, default: '관광지'},
   title: {
     type: String,
     required: true
@@ -13,11 +14,13 @@ const spotSchema = new Schema({
   review_count: { type: Number, default: 0 },
   top_review: [],
   phone: { type: String, required: true },
-  icons: [String],
   image_id: { type: Schema.Types.ObjectId },
+  icons: [String],
 },
   { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } }
 );
+
+spotSchema.index({title: 'text'})
 
 const Spot = mongoose.model('Spot', spotSchema);
 module.exports = Spot;

@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const accommSchema = new Schema({
+  category:{type:String, default: '숙소'},
   title: {
     type: String,
     required: true
@@ -17,9 +18,12 @@ const accommSchema = new Schema({
   types: [String],
   pet_facilities: [String],
   facilities: [String],
+  icons:[String]
 },
   { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } }
 );
+
+// accommSchema.index({title: 'text'})
 
 const Accomm = mongoose.model('Accomm', accommSchema);
 module.exports = Accomm;

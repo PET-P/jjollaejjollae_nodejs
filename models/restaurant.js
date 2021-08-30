@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const restaurantSchema = new Schema({
+  category:{type:String, default: '식당'},
   title: {
     type: String,
     required: true
@@ -13,11 +14,13 @@ const restaurantSchema = new Schema({
   review_count: { type: Number, default: 0 },
   top_review: [],
   phone: { type: String, required: true },
-  icons: [String],
   image_id: { type: Schema.Types.ObjectId },
+  icons: [String],
 },
   { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } }
 );
+
+restaurantSchema.index({title: 'text'})
 
 const Restaurant = mongoose.model('Restaurant', restaurantSchema);
 module.exports = Restaurant;

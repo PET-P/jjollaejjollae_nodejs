@@ -7,6 +7,7 @@ const accomm = require('./accomm');
 const cafe = require('./cafe');
 const restaurant = require('./restaurant');
 const spot = require('./spot');
+const search = require('./search')
 
 router.use('/users', user);
 router.use('/posts', post);
@@ -15,5 +16,6 @@ router.use('/accomms', accomm);
 router.use('/cafes', cafe);
 router.use('/restaurants', restaurant);
 router.use('/spots', spot);
+router.use('/search',search);
 
 module.exports = router;

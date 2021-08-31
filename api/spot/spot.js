@@ -2,6 +2,7 @@ const Spot = require("../../models/spot");
 
 module.exports = {
   spotCreate: async (req, res) => {
+    req.body.category = '관광지'
     const spot = new Spot(req.body);
 
     try {

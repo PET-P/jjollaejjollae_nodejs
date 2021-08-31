@@ -2,6 +2,7 @@ const Accomm = require("../../models/accomm");
 
 module.exports = {
   accommCreate: async (req, res) => {
+    req.body.category = '숙소'
     const accomm = new Accomm(req.body);
 
     try {

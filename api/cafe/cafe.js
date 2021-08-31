@@ -2,6 +2,7 @@ const Cafe = require("../../models/cafe");
 
 module.exports = {
   cafeCreate: async (req, res) => {
+    req.body.category = '카페'
     const cafe = new Cafe(req.body);
 
     try {

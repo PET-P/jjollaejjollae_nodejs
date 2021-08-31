@@ -12,6 +12,7 @@ const likesSchema = new Schema({
 })
 
 const reviewSchema = new Schema({
+  category: { type: String, required: true },
   user_id: { type: Schema.Types.ObjectId, required: true },
   place_id: { type: Schema.Types.ObjectId, required: true },
   point: { type: Number, default: 10 },
@@ -30,8 +31,8 @@ const SpotReview = mongoose.model('SpotReview', reviewSchema);
 
 
 module.exports = {
-  AccommReview:AccommReview,
-  CafeReview:CafeReview,
+  AccommReview: AccommReview,
+  CafeReview: CafeReview,
   RestaurantReview: RestaurantReview,
-  SpotReview:SpotReview
+  SpotReview: SpotReview
 };

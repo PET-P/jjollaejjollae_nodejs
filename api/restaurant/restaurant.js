@@ -2,6 +2,7 @@ const Restaurant = require("../../models/restaurant");
 
 module.exports = {
   restaurantCreate: async (req, res) => {
+    req.body.category = '식당'
     const restaurant = new Restaurant(req.body);
 
     try {

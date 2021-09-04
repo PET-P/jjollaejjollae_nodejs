@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const authController = require("./auth");
+const thirdPartyController = require("./thirdParty")
+const passport = require('passport');
 
 // router.post("", userController.userCreate);
 // router.get("", userController.userList);
@@ -12,5 +14,16 @@ router.post('/email', authController.authEmail);
 router.get('', authController.authToken);
 router.post('/password', authController.findPassword)
 router.get('/password', authController.checkCode)
+
+router.get('/naver', passport.authenticate('naver', { session: false }));
+router.get('/naver/callback',
+  passport.authenticate('naver', { session: false }), thirdPartyController.socialAuth
+);
+
+router.get('/kakao', passport.authenticate('kakao', { session: false }));
+router.get('/kakao/callback',
+  passport.authenticate('kakao', { session: false }), thirdPartyController.socialAuth
+);
+
 
 module.exports = router;

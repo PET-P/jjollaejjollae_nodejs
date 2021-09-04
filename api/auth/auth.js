@@ -2,13 +2,13 @@ const User = require('../../models/user');
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const { sign, verify, refresh, refreshVerify } = require('../../middlewares/jwt');
-const crypto = require('crypto'); //내장 모듈이라 따로 설치 안해주셔도 됩니다!!
+const crypto = require('crypto');
 const { sendCode } = require('../../middlewares/nodemailer');
 
 module.exports = {
   authLogin: async (req, res) => {
     try {
-      passport.authenticate('local', (passportError, user, info) => {
+      passport.authenticate('local',{session:false}, (passportError, user, info) => {
         if (passportError) {
           return res.status(500).json({
             success: false,
@@ -177,7 +177,7 @@ module.exports = {
         if(user.code === code){
           let key_one=crypto.randomBytes(256).toString('hex').substr(100, 5);
           let key_two=crypto.randomBytes(256).toString('base64').substr(50, 5);
-          let tempPassword=key_one+key_two; //우리가 사용할 인증코드
+          let tempPassword=key_one+key_two; 
           await User.findByIdAndUpdate(user._id, {password:tempPassword}, {
             new: true,
             runValidators: true,

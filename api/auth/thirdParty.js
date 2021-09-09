@@ -15,7 +15,9 @@ module.exports = {
         let key_two=crypto.randomBytes(256).toString('base64').substr(50, 10);
         req.user.password = key_one+key_two;
 
+        req.user.account_type = 'social';
         user = new User(req.user)
+
         await user.save((err, doc) => {
           if (err) {
             console.log(err)
@@ -39,7 +41,7 @@ module.exports = {
             });
           }
         });
-      }else{
+      }else if (user.accout_type ==='social'){
         const accessToken = sign(user);
         const refreshToken = refresh(user.email);
 
@@ -51,6 +53,12 @@ module.exports = {
           message: '로그인 성공',
           data: user
         });
+      }
+      else{
+        res.status(400).json({
+          success: false,
+          message: '소셜로그인 계정이 아닙니다.'
+        })
       }
     } catch (e) {
       console.log(e)

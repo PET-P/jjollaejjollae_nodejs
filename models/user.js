@@ -15,6 +15,7 @@ const petSchema = new Schema({
 });
 
 const userSchema = new Schema({
+  account_type:{type:String,enum:['local','social']},
   email: {
     type: String,
     required: true,

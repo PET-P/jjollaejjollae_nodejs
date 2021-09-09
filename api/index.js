@@ -5,10 +5,6 @@ const post = require('./post');
 const image = require('./image');
 const auth = require('./auth');
 const place = require('./place');
-const accomm = require('./accomm');
-const cafe = require('./cafe');
-const restaurant = require('./restaurant');
-const spot = require('./spot');
 const search = require('./search')
 const review = require('./review');
 
@@ -18,10 +14,6 @@ router.use('/posts', post);
 router.use('/image', image);
 router.use('/auth',auth);
 router.use('/places',place);
-// router.use('/accomms', accomm);
-// router.use('/cafes', cafe);
-// router.use('/restaurants', restaurant);
-// router.use('/spots', spot);
 router.use('/search',search);
 router.use('/reviews', review);
 

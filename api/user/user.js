@@ -3,7 +3,9 @@ const { sign, refresh } = require('../../middleware/jwt');
 
 module.exports = {
   userCreate: async (req, res) => {
+    req.body.account_type = 'local';
     const user = new User(req.body);
+ 
 
     try {
       await user.save((err, doc) => {

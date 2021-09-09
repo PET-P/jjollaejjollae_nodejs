@@ -30,16 +30,19 @@ const passportVerify = async (email, password, done) => {
     if (!user) {
       done(null, false, { reason: '존재하지 않는 사용자 입니다.' });
       return
-    }
-    const compareResult = await bcrypt.compareSync(password, user.password);
+    }else if(user.accout_type === 'local'){
+      const compareResult = await bcrypt.compareSync(password, user.password);
 
-    if (compareResult) {
-      delete user.password
-      done(null, user);
-      return;
-    }
+      if (compareResult) {
+        delete user.password
+        done(null, user);
+        return;
+      }
 
-    done(null, false, { reason: '비밀번호가 틀렸습니다.' });
+      done(null, false, { reason: '비밀번호가 틀렸습니다.' });
+    }else{
+      done(null,false,{reason: '소셜로그인 계정입니다.'});
+    }
   } catch (e) {
     console.error(e);
     done(e)

@@ -1,7 +1,4 @@
-const Accomm = require('../../models/accomm')
-const Cafe = require('../../models/cafe')
-const Restaurant = require('../../models/restaurant')
-const Spot = require('../../models/spot')
+const Place = require('../../models/place')
 
 module.exports = {
   search: async (req, res) => {
@@ -19,34 +16,34 @@ module.exports = {
       let key = keyword.replace(/\s/gi, '')
 
       if (region === '') {
-        const temp1 = await Accomm.find({ title: new RegExp(key) }).select('_id title category review_point review_count')
-        const temp2 = await Cafe.find({ title: new RegExp(key) }).select('_id title category review_point review_count')
-        const temp3 = await Restaurant.find({ title: new RegExp(key) }).select('_id title category review_point review_count')
-        const temp4 = await Spot.find({ title: new RegExp(key) }).select('_id title category review_point review_count')
+        const result = await Place.find({ title: new RegExp(key) }).select('_id title category review_point review_count')
+        // const temp2 = await Cafe.find({ title: new RegExp(key) }).select('_id title category review_point review_count')
+        // const temp3 = await Restaurant.find({ title: new RegExp(key) }).select('_id title category review_point review_count')
+        // const temp4 = await Spot.find({ title: new RegExp(key) }).select('_id title category review_point review_count')
 
-        const result = [
-          ...temp1,
-          ...temp2,
-          ...temp3,
-          ...temp4,
-        ]
+        // const result = [
+        //   ...temp1,
+        //   ...temp2,
+        //   ...temp3,
+        //   ...temp4,
+        // ]
         res.status(200).json({
           data: result
         })
       } else {
-        console.log(key)
-        console.log(key + '|' + key.substring(key.indexOf(region) + region.length))
-        const temp1 = await Accomm.find({ title: new RegExp(key + '|' + key.substring(key.indexOf(region) + region.length)) }).select('_id title category review_point review_count address')
-        const temp2 = await Cafe.find({ title: new RegExp(key + '|' + key.substring(key.indexOf(region) + region.length)) }).select('_id title category review_point review_count address')
-        const temp3 = await Restaurant.find({ title: new RegExp(key + '|' + key.substring(key.indexOf(region) + region.length)) }).select('_id title category review_point review_count address')
-        const temp4 = await Spot.find({ title: new RegExp(key + '|' + key.substring(key.indexOf(region) + region.length)) }).select('_id title category review_point review_count address')
+        // console.log(key)
+        // console.log(key + '|' + key.substring(key.indexOf(region) + region.length))
+        const dup_result = await Place.find({ title: new RegExp(key + '|' + key.substring(key.indexOf(region) + region.length)) }).select('_id title category review_point review_count address')
+        // const temp2 = await Cafe.find({ title: new RegExp(key + '|' + key.substring(key.indexOf(region) + region.length)) }).select('_id title category review_point review_count address')
+        // const temp3 = await Restaurant.find({ title: new RegExp(key + '|' + key.substring(key.indexOf(region) + region.length)) }).select('_id title category review_point review_count address')
+        // const temp4 = await Spot.find({ title: new RegExp(key + '|' + key.substring(key.indexOf(region) + region.length)) }).select('_id title category review_point review_count address')
         
-        const dup_result = [
-          ...temp1,
-          ...temp2,
-          ...temp3,
-          ...temp4,
-        ]
+        // const dup_result = [
+        //   ...temp1,
+        //   ...temp2,
+        //   ...temp3,
+        //   ...temp4,
+        // ]
         const set = new Set(dup_result)
 
         const result = new Array(...set)

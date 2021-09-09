@@ -3,7 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const logger = require('morgan');
 const passport = require('passport');
-const passportConfig = require('./middlewares/passport');
+const passportConfig = require('./middleware/passport');
 
 const { PORT, MONGO_URI } = process.env;
 app = express();

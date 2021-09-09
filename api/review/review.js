@@ -1,18 +1,19 @@
 const mongoose = require("mongoose");
 
-const { RestaurantReview } = require("../../models/review");
+const Review = require("../../models/review");
+const Place = require("../../models/place");
 
 module.exports = {
   reviewCreate: async (req, res) => {
     try {
-      uid = req.body.user_id
-      pid = req.body.place_id
+      const uid = req.body.user_id
+      const pid = req.body.place_id
       req.body.user_id = mongoose.Types.ObjectId(uid)
       req.body.place_id = mongoose.Types.ObjectId(pid)
-      
-      const review = new RestaurantReview(req.body);
 
-      await review.save((err, doc) => {
+      const review = new Review(req.body);
+
+      await review.save(async (err, doc) => {
         if (err) {
           return res.status(500).json({
             success: false,
@@ -20,6 +21,14 @@ module.exports = {
           });
         }
         else {
+          let place = await Place.findById(review.place_id)
+          if (place.top_review.length < 2) {
+            await place.updateOne({ $push: { top_review: { $each: [review._id],$position:0 } } });
+          } else {
+            await place.updateOne({ $push: { top_review: { $each: [review._id],$position:0 } } }).exec();
+            await place.updateOne({ $pop: { top_review: 1 } });
+          }
+
           return res.status(200).json({
             success: true,
             message: "리뷰 등록 성공",
@@ -37,7 +46,7 @@ module.exports = {
   },
   reviewList: async (req, res) => {
     try {
-      const reviews = await RestaurantReview.find({});
+      const reviews = await Review.find({});
 
       res.status(200).json({
         success: true,
@@ -55,7 +64,7 @@ module.exports = {
     const id = req.params.id;
 
     try {
-      const review = await RestaurantReview.findById(id);
+      const review = await Review.findById(id);
 
       if (!review) {
         return res.status(404).json({
@@ -82,7 +91,7 @@ module.exports = {
     try {
       // new가 true이면 수정된 문서를 반환
       // runValidators가 true인 경우 업데이트 유효성 검사기를 실행
-      const review = await RestaurantReview.findByIdAndUpdate(id, req.body, {
+      const review = await Review.findByIdAndUpdate(id, req.body, {
         new: true,
         runValidators: true,
       });
@@ -110,7 +119,7 @@ module.exports = {
     const id = req.params.id;
 
     try {
-      const review = await RestaurantReview.findByIdAndDelete(id);
+      const review = await Review.findByIdAndDelete(id);
 
       if (!review) {
         return res.status(404).json({

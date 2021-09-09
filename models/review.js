@@ -13,26 +13,22 @@ const likesSchema = new Schema({
 
 const reviewSchema = new Schema({
   category: { type: String, required: true },
-  user_id: { type: Schema.Types.ObjectId, required: true },
-  place_id: { type: Schema.Types.ObjectId, required: true },
+  user_id: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  place_id: { type: Schema.Types.ObjectId, ref: 'Place', required: true },
   point: { type: Number, default: 10 },
   images_id: [Schema.Types.ObjectId],
   text: { type: String, required: true },
   likes: likesSchema,
   thumbnail_id: { type: Schema.Types.ObjectId },
+  satisfaction: [String],
 },
   { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } }
 );
 
-const AccommReview = mongoose.model('AccommReview', reviewSchema);
-const CafeReview = mongoose.model('CafeReview', reviewSchema);
-const RestaurantReview = mongoose.model('RestaurantReview', reviewSchema);
-const SpotReview = mongoose.model('SpotReview', reviewSchema);
+const Review = mongoose.model('Review', reviewSchema);
+// const CafeReview = mongoose.model('CafeReview', reviewSchema);
+// const RestaurantReview = mongoose.model('RestaurantReview', reviewSchema);
+// const SpotReview = mongoose.model('SpotReview', reviewSchema);
 
 
-module.exports = {
-  AccommReview: AccommReview,
-  CafeReview: CafeReview,
-  RestaurantReview: RestaurantReview,
-  SpotReview: SpotReview
-};
+module.exports = Review;

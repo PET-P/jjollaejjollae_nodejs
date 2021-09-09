@@ -2,7 +2,7 @@ const User = require('../../models/user');
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const { sign, verify, refresh, refreshVerify } = require('../../middlewares/jwt');
+const { sign, verify, refresh, refreshVerify } = require('../../middleware/jwt');
 
 
 module.exports = {

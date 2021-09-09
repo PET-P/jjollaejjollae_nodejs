@@ -1,5 +1,5 @@
 const User = require("../../models/user");
-const { sign, refresh } = require('../../middlewares/jwt');
+const { sign, refresh } = require('../../middleware/jwt');
 
 module.exports = {
   userCreate: async (req, res) => {

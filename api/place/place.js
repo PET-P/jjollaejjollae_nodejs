@@ -1,48 +1,43 @@
-const mongoose = require("mongoose");
-
-const { AccommReview } = require("../../models/review");
+const Place = require("../../models/place");
+const Review = require ('../../models/review');
 
 module.exports = {
-  reviewCreate: async (req, res) => {
-    try {
-      uid = req.body.user_id
-      pid = req.body.place_id
-      req.body.user_id = mongoose.Types.ObjectId(uid)
-      req.body.place_id = mongoose.Types.ObjectId(pid)
-      
-      const review = new AccommReview(req.body);
+  placeCreate: async (req, res) => {
+    const place = new Place(req.body);
 
-      await review.save((err, doc) => {
+    try {
+      await place.save((err, doc) => {
         if (err) {
           return res.status(500).json({
             success: false,
             error: err
           });
         }
-        else {
-          return res.status(200).json({
+        else{
+          res.status(200).json({
             success: true,
-            message: "리뷰 등록 성공",
+            message: "장소 등록 성공",
             data: doc
           });
         }
       });
+
+     
     } catch (e) {
-      console.log(e)
       res.status(500).json({
         success: false,
         error: e
       });
     }
   },
-  reviewList: async (req, res) => {
+  placeList: async (req, res) => {
     try {
-      const reviews = await AccommReview.find({});
+      const places = await Place.find({});
 
       res.status(200).json({
         success: true,
-        message: "리뷰목록 조회 성공",
-        data: reviews
+        message: "장소목록 조회 성공",
+        data: places
       });
     } catch (e) {
       res.status(500).json({
@@ -51,23 +46,23 @@ module.exports = {
       });
     }
   },
-  reviewRead: async (req, res) => {
+  placeRead: async (req, res) => {
     const id = req.params.id;
 
     try {
-      const review = await AccommReview.findById(id);
+      const place = await Place.findById(id);
 
-      if (!review) {
+      if (!place) {
         return res.status(404).json({
           success: false,
-          message: "존재하지 않는 리뷰"
+          message: "존재하지 않는 장소"
         });
       }
 
       res.status(200).json({
         success: true,
-        message: "리뷰 조회 성공",
-        data: review
+        message: "장소 조회 성공",
+        data:place
       });
     } catch (e) {
       res.status(500).json({
@@ -76,62 +71,57 @@ module.exports = {
       });
     }
   },
-  reviewUpdate: async (req, res) => {
+  placeUpdate: async (req, res) => {
     const id = req.params.id;
 
     try {
       // new가 true이면 수정된 문서를 반환
       // runValidators가 true인 경우 업데이트 유효성 검사기를 실행
-      const review = await AccommReview.findByIdAndUpdate(id, req.body, {
+      const place = await Place.findByIdAndUpdate(id, req.body, {
         new: true,
         runValidators: true,
       });
 
-      if (!review) {
+      if (!place) {
         return res.status(404).json({
           success: false,
-          message: "존재하지 않는 리뷰"
+          message: "존재하지 않는 장소"
         });
       }
 
       res.status(200).json({
         success: true,
         message: "정보수정 성공",
-        data: review
+        data: place
       });
     } catch (e) {
       res.status(500).json({
         success: false,
-        error: e
+        error:e
       });
     }
   },
-  reviewDelete: async (req, res, next) => {
+  placeDelete: async (req, res) => {
     const id = req.params.id;
 
     try {
-      const review = await AccommReview.findByIdAndDelete(id);
+      const place = await Place.findByIdAndDelete(id);
 
-      if (!review) {
+      if (!place) {
         return res.status(404).json({
           success: false,
-          message: "존재하지 않는 리뷰"
-        });
+          message: "존재하지 않는 장소"
+        });      
       }
 
-      if (!review.images_id) {
-        return res.status(200).json({
-          success: true,
-          message: "리뷰 삭제 성공"
-        });
-      }
-
-      req.images_id = review.images_id
-      next();
+      res.status(200).json({
+        success: true,
+        message: "장소삭제 성공"
+      });
     } catch (e) {
       res.status(500).json({
         success: false,
-        error: e
+        error:e
       });
     }
   },

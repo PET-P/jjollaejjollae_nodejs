@@ -1,9 +1,9 @@
 const User = require('../../models/user');
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
-const { sign, verify, refresh, refreshVerify } = require('../../middlewares/jwt');
+const { sign, verify, refresh, refreshVerify } = require('../../middleware/jwt');
 const crypto = require('crypto');
-const { sendCode } = require('../../middlewares/nodemailer');
+const { sendCode } = require('../../middleware/nodemailer');
 
 module.exports = {
   authLogin: async (req, res) => {

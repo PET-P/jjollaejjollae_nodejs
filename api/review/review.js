@@ -25,7 +25,7 @@ module.exports = {
           if (place.top_review.length < 2) {
             await place.updateOne({ $push: { top_review: { $each: [review._id],$position:0 } } });
           } else {
-            await place.updateOne({ $push: { top_review: { $each: [review._id],$position:0 } } }).exec();
+            await place.updateOne({ $push: { top_review: { $each: [review._id],$position:0 } } });
             await place.updateOne({ $pop: { top_review: 1 } });
           }
 

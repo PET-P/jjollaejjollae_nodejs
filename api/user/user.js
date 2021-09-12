@@ -1,4 +1,5 @@
 const User = require("../../models/user");
+const Wishlist = require("../../models/wishlist");
 const { sign, refresh } = require('../../middleware/jwt');
 
 module.exports = {
@@ -8,7 +9,7 @@ module.exports = {
  
 
     try {
-      await user.save((err, doc) => {
+      await user.save(async(err, doc) => {
         if (err) {
           console.log(err)
           return res.status(500).json({
@@ -17,6 +18,8 @@ module.exports = {
           });
         }
         else{
+          const wish = new Wishlist({user_id: user._id});
+          await wish.save();
           let accessToken = sign(user);
           let refreshToken = refresh(user.email);
 

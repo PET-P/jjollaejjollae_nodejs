@@ -1,4 +1,5 @@
 const User = require('../../models/user');
+const Wishlist = require('../../models/wishlist');
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
@@ -18,7 +19,7 @@ module.exports = {
         req.user.account_type = 'social';
         user = new User(req.user)
 
-        await user.save((err, doc) => {
+        await user.save(async (err, doc) => {
           if (err) {
             console.log(err)
             return res.status(500).json({
@@ -27,6 +28,9 @@ module.exports = {
             });
           }
           else {
+            const wish = new Wishlist({user_id: user._id});
+            await wish.save();
+
             const accessToken = sign(user);
             const refreshToken = refresh(user.email);
 

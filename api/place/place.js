@@ -1,5 +1,5 @@
 const Place = require("../../models/place");
-const Review = require ('../../models/review');
+const Review = require('../../models/review');
 
 module.exports = {
   placeCreate: async (req, res) => {
@@ -13,7 +13,7 @@ module.exports = {
             error: err
           });
         }
-        else{
+        else {
           res.status(200).json({
             success: true,
             message: "장소 등록 성공",
@@ -22,7 +22,7 @@ module.exports = {
         }
       });
 
-     
+
     } catch (e) {
       res.status(500).json({
         success: false,
@@ -57,13 +57,13 @@ module.exports = {
           success: false,
           message: "존재하지 않는 장소"
         });
+      } else {
+        res.status(200).json({
+          success: true,
+          message: "장소 조회 성공",
+          data: place
+        });
       }
-
-      res.status(200).json({
-        success: true,
-        message: "장소 조회 성공",
-        data:place
-      });
     } catch (e) {
       res.status(500).json({
         success: false,
@@ -97,7 +97,7 @@ module.exports = {
     } catch (e) {
       res.status(500).json({
         success: false,
-        error:e
+        error: e
       });
     }
   },
@@ -111,7 +111,7 @@ module.exports = {
         return res.status(404).json({
           success: false,
           message: "존재하지 않는 장소"
-        });      
+        });
       }
 
       res.status(200).json({
@@ -121,7 +121,7 @@ module.exports = {
     } catch (e) {
       res.status(500).json({
         success: false,
-        error:e
+        error: e
       });
     }
   },

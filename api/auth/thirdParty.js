@@ -12,11 +12,11 @@ module.exports = {
       const email = req.user.email;
       let user = await User.findOne({ email: email })
       if (!user) {
-        let key_one=crypto.randomBytes(256).toString('hex').substr(100, 10);
-        let key_two=crypto.randomBytes(256).toString('base64').substr(50, 10);
-        req.user.password = key_one+key_two;
+        let keyOne = crypto.randomBytes(256).toString('hex').substr(100, 10);
+        let keyTwo = crypto.randomBytes(256).toString('base64').substr(50, 10);
+        req.user.password = keyOne + keyTwo;
 
-        req.user.account_type = 'social';
+        req.user.accountType = 'social';
         user = new User(req.user)
 
         await user.save(async (err, doc) => {
@@ -28,7 +28,7 @@ module.exports = {
             });
           }
           else {
-            const wish = new Wishlist({user_id: user._id});
+            const wish = new Wishlist({ userId: user._id });
             await wish.save();
 
             const accessToken = sign(user);
@@ -39,18 +39,18 @@ module.exports = {
               message: "회원가입 성공",
               data: {
                 _id: user._id,
-                access_token: accessToken,
-                refresh_token: refreshToken
+                accessToken: accessToken,
+                refreshToken: refreshToken
               }
             });
           }
         });
-      }else if (user.accout_type ==='social'){
+      } else if (user.accoutType === 'social') {
         const accessToken = sign(user);
         const refreshToken = refresh(user.email);
 
-        user.access_token = accessToken;
-        user.refresh_token = refreshToken;
+        user.accessToken = accessToken;
+        user.refreshToken = refreshToken;
 
         res.status(200).json({
           success: true,
@@ -58,7 +58,7 @@ module.exports = {
           data: user
         });
       }
-      else{
+      else {
         res.status(400).json({
           success: false,
           message: '소셜로그인 계정이 아닙니다.'

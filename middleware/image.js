@@ -9,7 +9,7 @@ module.exports = {
 
         const image = await Image.create({ image: img })
         await image.save();
-        req.body.image_id = image._id
+        req.body.imageId = image._id
         next()
       }
       else {
@@ -22,7 +22,7 @@ module.exports = {
   },
   deleteImage: async function (req, res) {
     try {
-      const image = await Image.findByIdAndDelete(req.image_id)
+      const image = await Image.findByIdAndDelete(req.imageId)
 
       if (!image) {
         return res.status(404).json({
@@ -45,14 +45,14 @@ module.exports = {
   saveMultiImage: async (req, res, next) => {
     try {
       if (req.files.length != 0) {
-        req.body.images_id = []
+        req.body.imagesId = []
         for (file of req.files) {
           const img = file.buffer;
           if (img.truncated) return res.status(413);
 
           const image = await Image.create({ image: img })
           await image.save();
-          req.body.images_id.push(image._id)
+          req.body.imagesId.push(image._id)
         }
         next()
       }
@@ -66,7 +66,7 @@ module.exports = {
   },
   deleteMultiImage: async function (req, res) {
     try {
-      for (id of req.images_id) {
+      for (id of req.imagesId) {
         const image = await Image.findByIdAndDelete(id)
 
         if (!image) {

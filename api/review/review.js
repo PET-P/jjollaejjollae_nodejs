@@ -6,10 +6,10 @@ const Place = require("../../models/place");
 module.exports = {
   reviewCreate: async (req, res) => {
     try {
-      const uid = req.body.user_id
-      const pid = req.body.place_id
-      req.body.user_id = mongoose.Types.ObjectId(uid)
-      req.body.place_id = mongoose.Types.ObjectId(pid)
+      const uid = req.body.userId
+      const pid = req.body.placeId
+      req.body.userId = mongoose.Types.ObjectId(uid)
+      req.body.placeId = mongoose.Types.ObjectId(pid)
 
       const review = new Review(req.body);
 
@@ -21,12 +21,12 @@ module.exports = {
           });
         }
         else {
-          let place = await Place.findById(review.place_id)
-          if (place.top_review.length < 2) {
-            await place.updateOne({ $push: { top_review: { $each: [review._id],$position:0 } } });
+          let place = await Place.findById(review.placeId)
+          if (place.topReview.length < 2) {
+            await place.updateOne({ $push: { topReview: { $each: [review._id],$position:0 } } });
           } else {
-            await place.updateOne({ $push: { top_review: { $each: [review._id],$position:0 } } });
-            await place.updateOne({ $pop: { top_review: 1 } });
+            await place.updateOne({ $push: { topReview: { $each: [review._id],$position:0 } } });
+            await place.updateOne({ $pop: { topReview: 1 } });
           }
 
           return res.status(200).json({
@@ -128,14 +128,14 @@ module.exports = {
         });
       }
 
-      if (!review.images_id) {
+      if (!review.imagesId) {
         return res.status(200).json({
           success: true,
           message: "리뷰 삭제 성공"
         });
       }
 
-      req.images_id = review.images_id
+      req.imagesId = review.imagesId
       next();
     } catch (e) {
       res.status(500).json({

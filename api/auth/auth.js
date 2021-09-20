@@ -24,8 +24,8 @@ module.exports = {
         const accessToken = sign(user);
         const refreshToken = refresh(user.email);
 
-        user.access_token = accessToken;
-        user.refresh_token = refreshToken;
+        user.accessToken = accessToken;
+        user.refreshToken = refreshToken;
 
         res.status(200).json({
           success: true,
@@ -70,6 +70,8 @@ module.exports = {
         const authToken = req.headers.authorization.split('Bearer ')[1];
         const refreshToken = req.headers.refresh;
 
+        console.log(authToken)
+        console.log(refreshToken)
         // access token 검증 -> expired여야 함.
         const authResult = verify(authToken);
 
@@ -122,7 +124,7 @@ module.exports = {
         } else {
           // 3. access token이 만료되지 않은경우 => refresh 할 필요가 없습니다.
           res.status(400).send({
-            ok: false,
+            success: false,
             message: 'Access token is not expired!',
           });
         }
@@ -175,9 +177,9 @@ module.exports = {
       const user = await User.findOne({ email: email },).select('+code').lean()
       if(user){
         if(user.code === code){
-          let key_one=crypto.randomBytes(256).toString('hex').substr(100, 5);
-          let key_two=crypto.randomBytes(256).toString('base64').substr(50, 5);
-          let tempPassword=key_one+key_two; 
+          let keyOne=crypto.randomBytes(256).toString('hex').substr(100, 5);
+          let keyTwo=crypto.randomBytes(256).toString('base64').substr(50, 5);
+          let tempPassword=keyOne+keyTwo; 
           await User.findByIdAndUpdate(user._id, {password:tempPassword}, {
             new: true,
             runValidators: true,

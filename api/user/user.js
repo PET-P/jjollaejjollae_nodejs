@@ -4,7 +4,7 @@ const { sign, refresh } = require('../../middleware/jwt');
 
 module.exports = {
   userCreate: async (req, res) => {
-    req.body.account_type = 'local';
+    req.body.accountType = 'local';
     const user = new User(req.body);
  
 
@@ -18,7 +18,7 @@ module.exports = {
           });
         }
         else{
-          const wish = new Wishlist({user_id: user._id});
+          const wish = new Wishlist({userId: user._id});
           await wish.save();
           let accessToken = sign(user);
           let refreshToken = refresh(user.email);
@@ -28,8 +28,8 @@ module.exports = {
             message: "회원가입 성공",
             data: {
               _id: user._id,
-              access_token: accessToken,
-              refresh_token: refreshToken
+              accessToken: accessToken,
+              refreshToken: refreshToken
             }
           });
         }

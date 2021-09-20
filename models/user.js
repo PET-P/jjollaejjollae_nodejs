@@ -12,10 +12,10 @@ const petSchema = new Schema({
   breed: { type: String, required: true },
   size: { type: String, required: true, default: '소형', enum: ['소형', '중형', '대형'] },
   weight: { type: Number, required: true }
-});
+}, { timestamps: true });
 
 const userSchema = new Schema({
-  account_type:{type:String,enum:['local','social']},
+  accountType: { type: String, enum: ['local', 'social'] },
   email: {
     type: String,
     required: true,
@@ -29,12 +29,12 @@ const userSchema = new Schema({
     // select: false
   },
   nick: { type: String, required: true },
-  phone: { type: String },// required: true
+  phone: { type: String }, // required: true
   admin: { type: Boolean, required: true, default: false },
   pets: [petSchema],
   code: { type: String, select: false }
 },
-  { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } },
+  { timestamps: true },
 );
 
 userSchema.pre('save', function (next) {

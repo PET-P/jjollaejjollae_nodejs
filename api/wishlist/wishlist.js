@@ -5,19 +5,25 @@ const Wishlist = require("../../models/wishlist");
 module.exports = {
   folderCreate: async (req, res) => {
     try {
-      // const user_id = req.body.user_id
-      // console.log(user_id)
+      // const userId = req.body.userId
+      // console.log(userId)
       const wishlist = await Wishlist.findOneAndUpdate(
-        { user_id: req.body.user_id },
+        { userId: req.body.userId },
         { $push: { folder: { $each: [req.body.folder], $position: 0 } } },
         { new: true, runValidators: true }
       );
-
-      res.status(200).json({
-        success: true,
-        message: "게시물 업로드 성공",
-        data: wishlist
-      });
+      if (!wishlist) {
+        res.status(500).json({
+          success: false,
+          message: '문제발생'
+        })
+      } else {
+        res.status(200).json({
+          success: true,
+          message: "위시리스트 생성 성공",
+          data: wishlist
+        })
+      };
     } catch (e) {
       console.log(e)
       res.status(500).json({
@@ -32,7 +38,7 @@ module.exports = {
 
       res.status(200).json({
         success: true,
-        message: "게시물 조회 성공",
+        message: "위시리스트 조회 성공",
         data: wishlists
       });
     } catch (e) {
@@ -44,18 +50,18 @@ module.exports = {
   },
   folderRead: async (req, res) => {
     try {
-      const wishlist = await Wishlist.findOne({ user_id: req.params.user_id });
+      const wishlist = await Wishlist.findOne({ userId: req.params.userId });
 
       if (!wishlist) {
         return res.status(404).json({
           success: false,
-          message: "존재하지 않는 게시물"
+          message: "존재하지 않는 사용자"
         });
       }
 
       res.status(200).json({
         success: true,
-        message: "게시물 조회 성공",
+        message: "위시리스트 조회 성공",
         data: wishlist
       });
     } catch (e) {
@@ -67,24 +73,22 @@ module.exports = {
   },
   folderUpdate: async (req, res) => {
     try {
-      // new가 true이면 수정된 문서를 반환
-      // runValidators가 true인 경우 업데이트 유효성 검사기를 실행
       const wishlist = await Wishlist.findOneAndUpdate(
-        { user_id: req.params.user_id, "folder._id": req.query.folder_id },
-        { $set: { "folder.$.name": req.body.name, "folder.$.start_date": req.body.start_date, "folder.$.end_date": req.body.end_date } },
+        { userId: req.params.userId, "folder._id": req.query.folderId },
+        { $set: { "folder.$.name": req.body.name, "folder.$.startDate": req.body.startDate, "folder.$.endDate": req.body.endDate } },
         { new: true, runValidators: true, }
       );
 
       if (!wishlist) {
         return res.status(404).json({
           success: false,
-          message: "존재하지 않는 게시물"
+          message: "존재하지 않는 위시리스트"
         });
       }
 
       res.status(200).json({
         success: true,
-        message: "게시물 수정 성공",
+        message: "위시리스트 수정 성공",
         data: wishlist
       });
     } catch (e) {
@@ -97,22 +101,22 @@ module.exports = {
   folderDelete: async (req, res) => {
     try {
       const wishlist = await Wishlist.findOneAndUpdate(
-        { user_id: req.params.user_id },
-        { $pull: { folder: { _id: req.query.folder_id } } },
+        { userId: req.params.userId },
+        { $pull: { folder: { _id: req.query.folderId } } },
         { new: true }
       );
 
       if (!wishlist) {
         return res.status(404).json({
           success: false,
-          message: "존재하지 않는 게시물"
+          message: "존재하지 않는 위시리스트"
         });
       }
 
-      if (!wishlist.image_id) {
+      if (!wishlist.imageId) {
         return res.status(200).json({
           success: true,
-          message: "게시물 삭제 성공",
+          message: "위시리스트 삭제 성공",
           data: wishlist
         });
       }
@@ -127,10 +131,10 @@ module.exports = {
   },
   wishAdd: async (req, res) => {
     try {
-      const { user_id, place_id, folder_id } = req.body;
+      const { userId, placeId, folderId, region } = req.body;
       const wishlist = await Wishlist.findOneAndUpdate(
-        { user_id: user_id, 'folder._id': folder_id },
-        { $push: { 'folder.$.contents': { $each: [place_id], $position: 0 }, total: { $each: [place_id], $position: 0 } } },
+        { userId: userId, 'folder._id': folderId },
+        { $push: { 'folder.$.contents': { $each: [placeId], $position: 0 }, total: { $each: [placeId], $position: 0 }, 'folder.$.regions': { $each: [region], $position: 0 } } },
         { new: true }
       );
       if (!wishlist) {
@@ -155,11 +159,11 @@ module.exports = {
   },
   wishDelete: async (req, res) => {
     try {
-      const { place_id, folder_id } = req.query;
-      const user_id = req.params.user_id;
+      const { placeId, folderId } = req.query;
+      const userId = req.params.userId;
       const wishlist = await Wishlist.findOneAndUpdate(
-        { user_id: user_id, 'folder._id': folder_id },
-        { $pull: { 'folder.$.contents': place_id, total: place_id } },
+        { userId: userId, 'folder._id': folderId },
+        { $pull: { 'folder.$.contents': placeId, total: placeId } },
         { new: true }
       );
       if (!wishlist) {
@@ -185,10 +189,10 @@ module.exports = {
   },
   wishRead: async (req, res) => {
     try {
-      const user_id = req.params.user_id;
-      const folder_id = req.query.folder_id;
+      const userId = req.params.userId;
+      const folderId = req.query.folderId;
 
-      const folder = await Wishlist.findOne({ user_id: user_id, 'folder._id': folder_id }, { 'folder.$': 1 }).populate('folder.contents')
+      const folder = await Wishlist.findOne({ userId: userId, 'folder._id': folderId }, { 'folder.$': 1 }).populate('folder.contents')
 
       if (!folder) {
         return res.status(404).json({

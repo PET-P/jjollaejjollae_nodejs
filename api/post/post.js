@@ -109,14 +109,14 @@ module.exports = {
         });      
       }
 
-      if (!post.image_id){
+      if (!post.imageId){
         return res.status(200).json({
           success: true,
           message: "게시물 삭제 성공"
         });
       }
 
-      req.image_id = post.image_id
+      req.imageId = post.imageId
       next();
     } catch (e) {
       return res.status(500).json({

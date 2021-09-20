@@ -30,7 +30,7 @@ const passportVerify = async (email, password, done) => {
     if (!user) {
       done(null, false, { reason: '존재하지 않는 사용자 입니다.' });
       return
-    }else if(user.accout_type === 'local'){
+    }else if(user.accountType === 'local'){
       const compareResult = await bcrypt.compareSync(password, user.password);
 
       if (compareResult) {

@@ -6,16 +6,16 @@ const { Schema } = mongoose;
 
 const petSchema = new Schema({
   name: { type: String, required: true },
-  age: { type: Number, required: true, default: 1 },
+  age: { type: Number },
   sex: { type: String, required: true, enum: ['남', '여'] },
-  type: { type: String, required: true, enum: ['강아지', '고양이'] },
-  breed: { type: String, required: true },
+  type: { type: String, enum: ['강아지', '고양이'] },
+  breed: { type: String },
   size: { type: String, required: true, default: '소형', enum: ['소형', '중형', '대형'] },
-  weight: { type: Number, required: true }
+  weight: { type: Number }
 }, { timestamps: true });
 
 const userSchema = new Schema({
-  accountType: { type: String, enum: ['local', 'social'] },
+  accountType: { type: String, enum: ['local', 'social'], required: true },
   email: {
     type: String,
     required: true,

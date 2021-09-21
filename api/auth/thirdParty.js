@@ -45,7 +45,7 @@ module.exports = {
             });
           }
         });
-      } else if (user.accoutType === 'social') {
+      } else if (user.accountType === 'social') {
         const accessToken = sign(user);
         const refreshToken = refresh(user.email);
 

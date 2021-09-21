@@ -28,6 +28,8 @@ module.exports = {
         //   ...temp4,
         // ]
         res.status(200).json({
+          success:true,
+          message:'검색결과',
           data: result
         })
       } else {
@@ -58,6 +60,8 @@ module.exports = {
         })
 
         res.status(200).json({
+          success:true,
+          message:'검색결과',
           data: result
         })
       }

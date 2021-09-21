@@ -187,7 +187,7 @@ module.exports = {
           res.status(200).json({
             success:true,
             message:'임시비밀번호가 발급되었습니다.',
-            tempPassword: tempPassword
+            data:{tempPassword: tempPassword}
           })
         }
         else{

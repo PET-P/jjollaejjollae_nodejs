@@ -5,6 +5,8 @@ const logger = require('morgan');
 const passport = require('passport');
 const passportConfig = require('./middleware/passport');
 const fs = require('fs')
+const path = require('path')
+
 const { PORT, MONGO_URI } = process.env;
 app = express();
 

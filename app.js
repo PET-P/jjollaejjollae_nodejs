@@ -24,7 +24,7 @@ mongoose
 
 app.use(logger('dev'));
 
-app.use(morgan('common', {
+app.use(logger('common', {
   stream: fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
 }))
 

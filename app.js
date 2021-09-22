@@ -23,6 +23,11 @@ mongoose
   .catch(err => console.error(err));
 
 app.use(logger('dev'));
+
+app.use(morgan('common', {
+  stream: fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
+}))
+
 app.use(passport.initialize());
 passportConfig();
 

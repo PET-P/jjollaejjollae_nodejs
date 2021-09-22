@@ -53,8 +53,8 @@ module.exports = () => {
   passport.use('local', new LocalStrategy(passportConfig, passportVerify));
   passport.use('naver', new NaverStrategy(naverConfig,
     function (accessToken, refreshToken, profile, done) {
-      // console.log(accessToken)
-      // console.log(refreshToken)
+      console.log(accessToken)
+      console.log(refreshToken)
       // console.log(profile)
       let user = {
         nick: profile.displayName,

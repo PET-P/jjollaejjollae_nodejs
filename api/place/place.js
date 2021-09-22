@@ -1,6 +1,6 @@
 const Place = require("../../models/place");
 const Review = require('../../models/review');
-
+const mongoose = require('mongoose')
 module.exports = {
   placeCreate: async (req, res) => {
     const place = new Place(req.body);
@@ -48,29 +48,45 @@ module.exports = {
   },
   placeRead: async (req, res) => {
     const id = req.params.id;
-
     try {
-      const place = await Place.findById(id);
+      const place = await Place.aggregate([
+        { $match: { _id: mongoose.Types.ObjectId(id)} },
+        {
+          $lookup: {
+            from: 'reviews',
+            localField: '_id',
+            foreignField: 'placeId',
+            as: 'reviews'
+          }
+        },
+        {$sort:{updatedAt:-1}},
+        {$limit:2},
+        // {$project:{
+        //   _id:1,
+        //   title:1,
+        //   reviews:1
+        // }}
+      ]).exec();
 
-      if (!place) {
-        return res.status(404).json({
-          success: false,
-          message: "존재하지 않는 장소"
-        });
-      } else {
-        res.status(200).json({
-          success: true,
-          message: "장소 조회 성공",
-          data: place
-        });
-      }
-    } catch (e) {
-      res.status(500).json({
+    if (!place) {
+      return res.status(404).json({
         success: false,
-        error: e
+        message: "존재하지 않는 장소"
+      });
+    } else {
+      res.status(200).json({
+        success: true,
+        message: "장소 조회 성공",
+        data: place
       });
     }
-  },
+  } catch(e) {
+    res.status(500).json({
+      success: false,
+      error: e
+    });
+  }
+},
   placeUpdate: async (req, res) => {
     const id = req.params.id;
 
@@ -101,28 +117,28 @@ module.exports = {
       });
     }
   },
-  placeDelete: async (req, res) => {
-    const id = req.params.id;
+    placeDelete: async (req, res) => {
+      const id = req.params.id;
 
-    try {
-      const place = await Place.findByIdAndDelete(id);
+      try {
+        const place = await Place.findByIdAndDelete(id);
 
-      if (!place) {
-        return res.status(404).json({
+        if (!place) {
+          return res.status(404).json({
+            success: false,
+            message: "존재하지 않는 장소"
+          });
+        }
+
+        res.status(200).json({
+          success: true,
+          message: "장소삭제 성공"
+        });
+      } catch (e) {
+        res.status(500).json({
           success: false,
-          message: "존재하지 않는 장소"
+          error: e
         });
       }
-
-      res.status(200).json({
-        success: true,
-        message: "장소삭제 성공"
-      });
-    } catch (e) {
-      res.status(500).json({
-        success: false,
-        error: e
-      });
-    }
-  },
+    },
 }

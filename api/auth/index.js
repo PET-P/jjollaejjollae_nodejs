@@ -15,15 +15,17 @@ router.get('', authController.authToken);
 router.post('/password', authController.findPassword)
 router.get('/password', authController.checkCode)
 
-router.get('/naver', passport.authenticate('naver', { session: false }));
-router.get('/naver/callback',
-  passport.authenticate('naver', { session: false }), thirdPartyController.socialAuth
-);
+router.post('/social',thirdPartyController.socialAuth);
 
-router.get('/kakao', passport.authenticate('kakao', { session: false }));
-router.get('/kakao/callback',
-  passport.authenticate('kakao', { session: false }), thirdPartyController.socialAuth
-);
+// router.get('/naver', passport.authenticate('naver', { session: false }));
+// router.get('/naver/callback',
+//   passport.authenticate('naver', { session: false }), thirdPartyController.socialAuth
+// );
+
+// router.get('/kakao', passport.authenticate('kakao', { session: false }));
+// router.get('/kakao/callback',
+//   passport.authenticate('kakao', { session: false }), thirdPartyController.socialAuth
+// );
 
 
 module.exports = router;

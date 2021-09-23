@@ -9,15 +9,15 @@ const { sign, verify, refresh, refreshVerify } = require('../../middleware/jwt')
 module.exports = {
   socialAuth: async (req, res) => {
     try {
-      const email = req.body.user.email;
-      let user = await User.findOne({ email: email })
+      const email = req.body.email;
+      let user = await User.findOne({ email: email }).select('_id email accountType').lean()
       if (!user) {
         let keyOne = crypto.randomBytes(256).toString('hex').substr(100, 10);
         let keyTwo = crypto.randomBytes(256).toString('base64').substr(50, 10);
-        req.body.user.password = keyOne + keyTwo;
+        req.body.password = keyOne + keyTwo;
 
-        req.body.user.accountType = 'social';
-        user = new User(req.body.user)
+        req.body.accountType = 'social';
+        user = new User(req.body)
 
         await user.save(async (err, doc) => {
           if (err) {
@@ -28,17 +28,17 @@ module.exports = {
             });
           }
           else {
-            const wish = new Wishlist({ userId: user._id });
+            const wish = new Wishlist({ userId: doc._id });
             await wish.save();
 
-            const accessToken = sign(user);
-            const refreshToken = refresh(user.email);
+            const accessToken = sign(doc);
+            const refreshToken = refresh(doc.email);
 
             return res.status(200).json({
               success: true,
               message: "회원가입 성공",
               data: {
-                _id: user._id,
+                _id: doc._id,
                 accessToken: accessToken,
                 refreshToken: refreshToken
               }
@@ -49,13 +49,14 @@ module.exports = {
         const accessToken = sign(user);
         const refreshToken = refresh(user.email);
 
-        user.accessToken = accessToken;
-        user.refreshToken = refreshToken;
-
         res.status(200).json({
           success: true,
           message: '로그인 성공',
-          data: user
+          data: {
+            _id: user._id,
+            accessToken: accessToken,
+            refreshToken: refreshToken
+          }
         });
       }
       else {

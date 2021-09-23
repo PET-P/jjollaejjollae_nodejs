@@ -23,14 +23,13 @@ module.exports = {
           let accessToken = sign(user);
           let refreshToken = refresh(user.email);
 
+          user.accessToken = accessToken;
+          user.refreshToken = refreshToken;
+
           return res.status(200).json({
             success: true,
             message: "회원가입 성공",
-            data: {
-              _id: user._id,
-              accessToken: accessToken,
-              refreshToken: refreshToken
-            }
+            data: user
           });
         }
       });

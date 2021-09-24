@@ -28,7 +28,7 @@ const userSchema = new Schema({
     select: false
   },
   nick: { type: String, required: true },
-  phone: { type: String, required:true }, // required: true
+  phone: { type: String }, // required: true
   admin: { type: Boolean, required: true, default: false },
   pets: [petSchema],
   code: { type: String, select: false }

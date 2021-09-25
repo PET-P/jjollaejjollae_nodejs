@@ -102,7 +102,7 @@ module.exports = {
             const newAccessToken = sign({ email: decoded.email, admin: decoded.admin });
 
             if (jwt.decode(refreshToken).exp - parseInt(Date.now() / 1000) < 7 * 24 * 3600) { //refreshToken 유효시간 7일이내
-              newRefreshToken = refresh()
+              newRefreshToken = refresh(decoded.email)
               res.status(200).send({ // 새로 발급한 access token과 원래 있던 refresh token 모두 클라이언트에게 반환합니다.
                 success: true,
                 message: 'access/refresh 토큰 발급',

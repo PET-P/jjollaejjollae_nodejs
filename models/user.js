@@ -11,7 +11,8 @@ const petSchema = new Schema({
   type: { type: String, enum: ['강아지', '고양이'] },
   breed: { type: String },
   size: { type: String, required: true, default: '소형', enum: ['소형', '중형', '대형'] },
-  weight: { type: Number }
+  weight: { type: Number },
+  imageUrl: {type:String}
 }, { timestamps: true });
 
 const userSchema = new Schema({
@@ -31,7 +32,7 @@ const userSchema = new Schema({
   phone: { type: String }, // required: true
   admin: { type: Boolean, required: true, default: false },
   pets: [petSchema],
-  code: { type: String, select: false }
+  tempPassword: { type: String, default:null, select: false }
 },
   { timestamps: true },
 );
@@ -58,10 +59,25 @@ userSchema.pre('save', function (next) {
 userSchema.pre('findOneAndUpdate', function (next) {
   const user = this;
   const modifiedField = this.getUpdate().password;
+  const modifiedField2 = this.getUpdate().tempPassword;
 
-  if (!modifiedField) {
+  if (!modifiedField && !modifiedField2) {
     return next();
-  }
+  }else if (!modifiedField){
+    try {
+      bcrypt.genSalt(10, function (err, salt) {
+        if (err) return next(err);
+  
+        bcrypt.hash(modifiedField2, salt, function (err, hash) {
+          if (err) return next(err);
+          user.getUpdate().tempPassword = hash
+          next();
+        })
+      })
+    } catch (error) {
+      return next(error);
+    }
+  }else
   try {
     bcrypt.genSalt(10, function (err, salt) {
       if (err) return next(err);

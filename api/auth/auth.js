@@ -5,10 +5,29 @@ const { sign, verify, refresh, refreshVerify } = require('../../middleware/jwt')
 const crypto = require('crypto');
 const { sendCode } = require('../../middleware/nodemailer');
 
+const generatePassword = () => {
+  const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
+  const specials ='!@#$%^&*';
+  const stringLength = 8;
+
+  var randomString = "";
+  for (let i = 0; i < stringLength; i++) {
+    if (i<6){
+      let randomNum = Math.floor(Math.random() * chars.length);
+      randomString += chars.substring(randomNum, randomNum + 1);
+    }
+    else{
+      let randomNum = Math.floor(Math.random() * specials.length);
+      randomString += specials.substring(randomNum, randomNum + 1);
+    }
+  }
+  return randomString;
+}
+
 module.exports = {
   authLogin: async (req, res) => {
     try {
-      passport.authenticate('local',{session:false}, (passportError, user, info) => {
+      passport.authenticate('local', { session: false }, (passportError, user, info) => {
         if (passportError) {
           return res.status(500).json({
             success: false,
@@ -19,19 +38,20 @@ module.exports = {
             success: false,
             message: info.reason
           });
+        } else {
+          const accessToken = sign(user);
+          const refreshToken = refresh(user.email);
+
+          res.status(200).json({
+            success: true,
+            message: '로그인 성공',
+            data: {
+              _id: user._id,
+              accessToken: accessToken,
+              refreshToken: refreshToken
+            }
+          });
         }
-
-        const accessToken = sign(user);
-        const refreshToken = refresh(user.email);
-
-        user.accessToken = accessToken;
-        user.refreshToken = refreshToken;
-
-        res.status(200).json({
-          success: true,
-          message: '로그인 성공',
-          data: user
-        });
       })(req, res);
     } catch (e) {
       res.status(500).json({
@@ -43,19 +63,19 @@ module.exports = {
   authEmail: async (req, res) => {
     try {
       const email = req.body.email;
-      const user = await User.findOne({ email: email });
+      const user = await User.findOne({ email: email }).select('_id').lean();
 
       if (!user) {
         return res.status(404).json({
           success: false,
           message: '존재하지 않는 사용자입니다.'
         })
+      } else {
+        return res.status(200).json({
+          success: true,
+          message: '존재하는 사용자입니다.'
+        });
       }
-
-      res.status(200).json({
-        success: true,
-        message: '존재하는 사용자입니다.'
-      });
     } catch (e) {
       res.status(500).json({
         success: false,
@@ -70,8 +90,6 @@ module.exports = {
         const authToken = req.headers.authorization.split('Bearer ')[1];
         const refreshToken = req.headers.refresh;
 
-        console.log(authToken)
-        console.log(refreshToken)
         // access token 검증 -> expired여야 함.
         const authResult = verify(authToken);
 
@@ -139,8 +157,8 @@ module.exports = {
   findPassword: async (req, res) => {
     try {
 
-      const email = req.body.email;
-      const user = await User.findOne({ email: email });
+      const email = req.query.email;
+      const user = await User.findOne({ email: email }).select('_id').lean();
 
       if (!user) {
         res.status(404).json({
@@ -149,58 +167,16 @@ module.exports = {
         })
       }
       else {
-        let code = Math.random().toString().substr(2, 6);
-        let result = await sendCode(code, email)
-        console.log(result)
+        let tempPassword = generatePassword();
+        let result = await sendCode(tempPassword, email)
+
         if (result) {
-          console.log(code)
-          await User.findOneAndUpdate({ _id: user._id }, { code: code })
+          await User.findOneAndUpdate({ _id: user._id }, { tempPassword: tempPassword })
           res.status(200).json({
             success: true,
-            message: '인증코드가 메일로 발송되었습니다.'
+            message: '비밀번호가 메일로 발송되었습니다.'
           })
         }
-      }
-    } catch (e) {
-      console.log(e)
-      res.status(500).json({
-        success: false,
-        error: e
-      });
-    }
-  },
-  checkCode: async (req, res) => {
-    try {
-      let email = req.query.email
-      let code = req.query.code
-
-      const user = await User.findOne({ email: email },).select('+code').lean()
-      if(user){
-        if(user.code === code){
-          let keyOne=crypto.randomBytes(256).toString('hex').substr(100, 5);
-          let keyTwo=crypto.randomBytes(256).toString('base64').substr(50, 5);
-          let tempPassword=keyOne+keyTwo; 
-          await User.findByIdAndUpdate(user._id, {password:tempPassword}, {
-            new: true,
-            runValidators: true,
-          });
-          res.status(200).json({
-            success:true,
-            message:'임시비밀번호가 발급되었습니다.',
-            data:{tempPassword: tempPassword}
-          })
-        }
-        else{
-          res.status(400).json({
-            success:false,
-            massage: '발급코드가 틀렸습니다.'
-          })
-        }
-      }else{
-        res.status(500).json({
-          success: false,
-          message: '유저가 없습니다?'
-        });
       }
     } catch (e) {
       console.log(e)
@@ -210,5 +186,46 @@ module.exports = {
       });
     }
   }
+  // checkCode: async (req, res) => {
+  //   try {
+  //     let email = req.query.email
+  //     let code = req.query.code
+
+  //     const user = await User.findOne({ email: email },).select('+code').lean()
+  //     if (user) {
+  //       if (user.code === code) {
+  //         let keyOne = crypto.randomBytes(256).toString('hex').substr(100, 5);
+  //         let keyTwo = crypto.randomBytes(256).toString('base64').substr(50, 5);
+  //         let tempPassword = keyOne + keyTwo;
+  //         await User.findByIdAndUpdate(user._id, { password: tempPassword }, {
+  //           new: true,
+  //           runValidators: true,
+  //         });
+  //         res.status(200).json({
+  //           success: true,
+  //           message: '임시비밀번호가 발급되었습니다.',
+  //           data: { tempPassword: tempPassword }
+  //         })
+  //       }
+  //       else {
+  //         res.status(400).json({
+  //           success: false,
+  //           massage: '발급코드가 틀렸습니다.'
+  //         })
+  //       }
+  //     } else {
+  //       res.status(500).json({
+  //         success: false,
+  //         message: '유저가 없습니다?'
+  //       });
+  //     }
+  //   } catch (e) {
+  //     console.log(e)
+  //     res.status(500).json({
+  //       success: false,
+  //       error: e
+  //     });
+  //   }
+  // }
 }
 

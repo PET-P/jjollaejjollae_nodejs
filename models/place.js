@@ -32,7 +32,7 @@ const placeSchema = new Schema({
   // reviewCount: { type: Number, default: 0 },
   // topReview: [{ type: mongoose.Types.ObjectId, ref: 'Reveiw' }],
   phone: { type: String, required: true },
-  imagesId: [Schema.Types.ObjectId],
+  imagesUrl: [String],
   types: [String],
   petFacilities: [String], //숙소 필터
   facilities: [String], // 숙소 필터

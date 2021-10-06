@@ -9,7 +9,7 @@ const subContentSchema = new Schema({
 
 const postSchema = new Schema({
   title: { type: String, required: true },
-  imageId: { type: Schema.Types.ObjectId },
+  imageUrl: { type: String },
   text: { type: String },
   subContents: [subContentSchema]
 }, { timestamps: true });

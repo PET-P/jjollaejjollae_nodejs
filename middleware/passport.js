@@ -25,23 +25,34 @@ const kakaoConfig = {
 
 const passportVerify = async (email, password, done) => {
   try {
-    const user = await User.findOne({ email: email },).select('+password').lean();
+    const user = await User.findOne({ email: email },).select('+password +tempPassword');
 
     if (!user) {
       done(null, false, { reason: '존재하지 않는 사용자 입니다.' });
       return
-    }else if(user.accountType === 'local'){
+    } else if (user.accountType === 'local') {
       const compareResult = await bcrypt.compareSync(password, user.password);
 
       if (compareResult) {
         delete user.password
         done(null, user);
         return;
+      }else if(user.tempPassword){
+        const tempResult = await bcrypt.compareSync(password, user.tempPassword);
+
+        if(tempResult){
+          tempPassword = user.tempPassword
+          user.updateOne({$set:{password:tempPassword, tempPassword:null}}).exec();
+          delete user.password
+          delete user.tempPassword
+          done(null, user);
+          return;
+        }
       }
 
       done(null, false, { reason: '비밀번호가 틀렸습니다.' });
-    }else{
-      done(null,false,{reason: '소셜로그인 계정입니다.'});
+    } else {
+      done(null, false, { reason: '소셜로그인 계정입니다.' });
     }
   } catch (e) {
     console.error(e);

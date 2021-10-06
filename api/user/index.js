@@ -8,4 +8,8 @@ router.get("/:id", userController.userRead);
 router.patch("/:id", userController.userUpdate);
 router.delete("/:id", userController.userDelete);
 
+router.get("/:id/pets",userController.petRead);
+router.post("/:id/pets",userController.petCreate);
+router.patch("/:userId/pets/:petId",userController.petUpdate);
+
 module.exports = router;

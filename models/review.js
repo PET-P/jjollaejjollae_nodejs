@@ -16,7 +16,7 @@ const reviewSchema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   placeId: { type: Schema.Types.ObjectId, ref: 'Place', required: true },
   point: { type: Number, default: 10 },
-  imagesId: [Schema.Types.ObjectId],
+  imagesUrl: [String],
   text: { type: String, required: true },
   likes: likesSchema,
   thumbnailId: { type: Schema.Types.ObjectId },

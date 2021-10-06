@@ -12,8 +12,8 @@ const passport = require('passport');
 router.post('', authController.authLogin);
 router.post('/email', authController.authEmail);
 router.get('', authController.authToken);
-router.post('/password', authController.findPassword)
-router.get('/password', authController.checkCode)
+// router.post('/password', authController.findPassword)
+router.get('/password', authController.findPassword)
 
 router.post('/social',thirdPartyController.socialAuth);
 

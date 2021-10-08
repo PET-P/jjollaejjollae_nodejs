@@ -7,16 +7,16 @@ const { sendCode } = require('../../middleware/nodemailer');
 
 const generatePassword = () => {
   const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
-  const specials ='!@#$%^&*';
+  const specials = '!@#$%^&*';
   const stringLength = 8;
 
   var randomString = "";
   for (let i = 0; i < stringLength; i++) {
-    if (i<6){
+    if (i < 6) {
       let randomNum = Math.floor(Math.random() * chars.length);
       randomString += chars.substring(randomNum, randomNum + 1);
     }
-    else{
+    else {
       let randomNum = Math.floor(Math.random() * specials.length);
       randomString += specials.substring(randomNum, randomNum + 1);
     }
@@ -40,7 +40,7 @@ module.exports = {
           });
         } else {
           const accessToken = sign(user);
-          const refreshToken = refresh(user.email);
+          const refreshToken = refresh(user._id);
 
           res.status(200).json({
             success: true,
@@ -117,14 +117,15 @@ module.exports = {
             });
           } else {
             // 2. access token이 만료되고, refresh token은 만료되지 않은 경우 => 새로운 access token을 발급
-            const newAccessToken = sign({ email: decoded.email, admin: decoded.admin });
+            const newAccessToken = sign({ _id: decoded.userId, admin: decoded.admin });
 
             if (jwt.decode(refreshToken).exp - parseInt(Date.now() / 1000) < 7 * 24 * 3600) { //refreshToken 유효시간 7일이내
-              newRefreshToken = refresh(decoded.email)
+              newRefreshToken = refresh(decoded.userId)
               res.status(200).send({ // 새로 발급한 access token과 원래 있던 refresh token 모두 클라이언트에게 반환합니다.
                 success: true,
                 message: 'access/refresh 토큰 발급',
                 data: {
+                  userId: decoded.userId,
                   accessToken: newAccessToken,
                   refreshToken: newRefreshToken,
                 },
@@ -134,6 +135,7 @@ module.exports = {
                 success: true,
                 message: 'access 토큰 발급',
                 data: {
+                  userId: decoded.userId,
                   accessToken: newAccessToken,
                 },
               });
@@ -144,13 +146,17 @@ module.exports = {
           res.status(400).send({
             success: false,
             message: 'Access token is not expired!',
+            data: {
+              userId: decoded.userId
+            }
           });
         }
       }
     } catch (e) {
+      console.log(e)
       res.status(500).json({
         success: false,
-        error: e
+        error: e.message
       });
     }
   },

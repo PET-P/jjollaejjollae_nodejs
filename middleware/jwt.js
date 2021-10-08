@@ -1,12 +1,13 @@
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const redisClient = require('./redis');
-const {SECRET, OPTION_ALGO, OPTION_ACCESS_EXPI,OPTION_REFRESH_EXPI} = process.env;
+const { StringDecoder } = require('string_decoder');
+const { SECRET, OPTION_ALGO, OPTION_ACCESS_EXPI, OPTION_REFRESH_EXPI } = process.env;
 
 module.exports = {
   sign: (user) => { // access token 발급
     const payload = { // access token에 들어갈 payload
-      email: user.email,
+      userId: user._id,
       admin: user.admin,
     };
 
@@ -21,7 +22,7 @@ module.exports = {
       decoded = jwt.verify(token, SECRET);
       return {
         ok: true,
-        email: decoded.email,
+        userId: decoded.userId,
         admin: decoded.admin,
       };
     } catch (err) {
@@ -31,21 +32,21 @@ module.exports = {
       };
     }
   },
-  refresh: (email) => { // refresh token 발급
+  refresh: (userId) => { // refresh token 발급
     refreshToken = jwt.sign({}, SECRET, { // refresh token은 payload 없이 발급
       algorithm: OPTION_ALGO,
       expiresIn: OPTION_REFRESH_EXPI,
     });
-    redisClient.set(email, refreshToken);
+    redisClient.set(String(userId), refreshToken);
     return refreshToken
   },
-  refreshVerify: async (token, userEmail) => { // refresh token 검증
+  refreshVerify: async (token, userId) => { // refresh token 검증
     /* redis 모듈은 기본적으로 promise를 반환하지 않으므로,
        promisify를 이용하여 promise를 반환하게 해줍니다.*/
     const getAsync = promisify(redisClient.get).bind(redisClient);
 
     try {
-      const data = await getAsync(userEmail); // refresh token 가져오기
+      const data = await getAsync(String(userId)); // refresh token 가져오기
       if (token === data) {
         try {
           jwt.verify(token, SECRET);

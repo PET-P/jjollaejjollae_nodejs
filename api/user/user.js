@@ -87,10 +87,17 @@ module.exports = {
     }
   },
   userUpdate: async (req, res) => {
-    const id = req.params.id;
+    const userId = req.params.userId;
+    console.log("hi")
+
+    if(!userId)
+      return res.status(400).json({success:false, message:"userId 없음"})
+    if(userId != req.userId)
+      return res.status(400).json({success:false, message:"토큰 유효성 없음"})
+
 
     try {
-      const user = await User.findByIdAndUpdate(id, req.body, {
+      const user = await User.findByIdAndUpdate(userId, req.body, {
         new: true
       }).select('_id admin accountType email nick pets').lean();
 
@@ -100,10 +107,14 @@ module.exports = {
           message: "존재하지 않는 회원"
         });
       } else {
+        const result = {};
+        for(key in req.body){
+          result[key] = req.body[key]
+        }
         return res.status(200).json({
           success: true,
           message: "정보수정 성공",
-          data: user
+          data: result
         });
       }
     } catch (e) {

@@ -113,7 +113,6 @@ module.exports = {
   folderDelete: async (req, res) => {
     try {
       const userId = req.params.userId
-      const userId = req.params.userId
       if (!userId)
         return res.status(400).json({ success: false, message: "userId 없음" })
       if (userId != req.userId)
@@ -152,7 +151,6 @@ module.exports = {
     try {
       const { userId, placeId, folderId, region } = req.body;
 
-      const userId = req.params.userId
       if (!userId)
         return res.status(400).json({ success: false, message: "userId 없음" })
       if (userId != req.userId)
@@ -188,7 +186,6 @@ module.exports = {
       const { placeId, folderId } = req.query;
       const userId = req.params.userId;
 
-      const userId = req.params.userId
       if (!userId)
         return res.status(400).json({ success: false, message: "userId 없음" })
       if (userId != req.userId)
@@ -225,7 +222,6 @@ module.exports = {
       const userId = req.params.userId;
       const folderId = req.query.folderId;
 
-      const userId = req.params.userId
       if (!userId)
         return res.status(400).json({ success: false, message: "userId 없음" })
       if (userId != req.userId)

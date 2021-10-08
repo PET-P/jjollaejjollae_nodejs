@@ -136,7 +136,6 @@ module.exports = {
         return res.status(400).json({ success: false, message: "userId 없음" })
       if (userId != req.userId)
         return res.status(400).json({ success: false, message: "토큰 유효성 없음" })
-      const user = await User.findById(userId).select('_id admin accountType email nick repPetId pets').lean();
 
       const user = await User.findByIdAndDelete(userId);
 

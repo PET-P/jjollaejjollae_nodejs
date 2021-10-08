@@ -41,7 +41,7 @@ module.exports = {
   },
   userList: async (req, res) => {
     try {
-      const users = await User.find({}).select('_id admin accountType email nick pets').lean();
+      const users = await User.find({}).select('_id admin accountType email nick repPetId pets').lean();
 
       res.status(200).json({
         success: true,
@@ -58,7 +58,7 @@ module.exports = {
   userRead: async (req, res) => {
     const id = req.params.id;
     try {
-      const user = await User.findById(id).select('_id admin accountType email nick pets').lean();
+      const user = await User.findById(id).select('_id admin accountType email nick repPetId pets').lean();
 
       user.pets.forEach(pet => {
         delete pet.createdAt

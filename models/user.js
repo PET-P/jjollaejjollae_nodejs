@@ -12,7 +12,7 @@ const petSchema = new Schema({
   breed: { type: String },
   size: { type: String, required: true, default: '소형', enum: ['소형', '중형', '대형'] },
   weight: { type: Number },
-  imageUrl: {type:String}
+  imageUrl: { type: String }
 }, { timestamps: true });
 
 const userSchema = new Schema({
@@ -31,8 +31,9 @@ const userSchema = new Schema({
   nick: { type: String, required: true },
   phone: { type: String }, // required: true
   admin: { type: Boolean, required: true, default: false },
+  repPetId: { type: String },
   pets: [petSchema],
-  tempPassword: { type: String, default:null, select: false }
+  tempPassword: { type: String, default: null, select: false }
 },
   { timestamps: true },
 );
@@ -63,11 +64,11 @@ userSchema.pre('findOneAndUpdate', function (next) {
 
   if (!modifiedField && !modifiedField2) {
     return next();
-  }else if (!modifiedField){
+  } else if (!modifiedField) {
     try {
       bcrypt.genSalt(10, function (err, salt) {
         if (err) return next(err);
-  
+
         bcrypt.hash(modifiedField2, salt, function (err, hash) {
           if (err) return next(err);
           user.getUpdate().tempPassword = hash
@@ -77,20 +78,20 @@ userSchema.pre('findOneAndUpdate', function (next) {
     } catch (error) {
       return next(error);
     }
-  }else
-  try {
-    bcrypt.genSalt(10, function (err, salt) {
-      if (err) return next(err);
-
-      bcrypt.hash(modifiedField, salt, function (err, hash) {
+  } else
+    try {
+      bcrypt.genSalt(10, function (err, salt) {
         if (err) return next(err);
-        user.getUpdate().password = hash
-        next();
+
+        bcrypt.hash(modifiedField, salt, function (err, hash) {
+          if (err) return next(err);
+          user.getUpdate().password = hash
+          next();
+        })
       })
-    })
-  } catch (error) {
-    return next(error);
-  }
+    } catch (error) {
+      return next(error);
+    }
 });
 
 const User = mongoose.model('User', userSchema);

@@ -6,11 +6,15 @@ const Place = require("../../models/place");
 module.exports = {
   reviewCreate: async (req, res) => {
     try {
-      const uid = req.body.userId
-      const pid = req.body.placeId
-      req.body.userId = mongoose.Types.ObjectId(uid)
-      req.body.placeId = mongoose.Types.ObjectId(pid)
+      const userId = req.body.userId
+      const placeId = req.body.placeId
+      req.body.userId = mongoose.Types.ObjectId(userId)
+      req.body.placeId = mongoose.Types.ObjectId(placeId)
 
+      if (!userId)
+        return res.status(400).json({ success: false, message: "userId 없음" })
+      if (userId != req.userId)
+        return res.status(400).json({ success: false, message: "토큰 유효성 없음" })
       const review = new Review(req.body);
 
       await review.save(async (err, doc) => {
@@ -23,9 +27,9 @@ module.exports = {
         else {
           let place = await Place.findById(review.placeId)
           if (place.topReview.length < 2) {
-            await place.updateOne({ $push: { topReview: { $each: [review._id],$position:0 } } });
+            await place.updateOne({ $push: { topReview: { $each: [review._id], $position: 0 } } });
           } else {
-            await place.updateOne({ $push: { topReview: { $each: [review._id],$position:0 } } });
+            await place.updateOne({ $push: { topReview: { $each: [review._id], $position: 0 } } });
             await place.updateOne({ $pop: { topReview: 1 } });
           }
 
@@ -86,9 +90,14 @@ module.exports = {
     }
   },
   reviewUpdate: async (req, res) => {
-    const id = req.params.id;
-
     try {
+      const { userId } = req.body
+      if (!userId)
+        return res.status(400).json({ success: false, message: "userId 없음" })
+      if (userId != req.userId)
+        return res.status(400).json({ success: false, message: "토큰 유효성 없음" })
+
+      const id = req.params.id;
       // new가 true이면 수정된 문서를 반환
       // runValidators가 true인 경우 업데이트 유효성 검사기를 실행
       const review = await Review.findByIdAndUpdate(id, req.body, {

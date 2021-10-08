@@ -57,14 +57,14 @@ module.exports = {
       res.status(200).json({
         success: true,
         message: "게시물 조회 성공",
-        data:post
+        data: post
       });
     } catch (e) {
       res.status(500).json({
         success: false,
         error: e
       });
-    } 
+    }
   },
   postUpdate: async (req, res) => {
     const id = req.params.id;
@@ -92,11 +92,11 @@ module.exports = {
     } catch (e) {
       res.status(500).json({
         success: false,
-        error:e
+        error: e
       });
     }
   },
-  postDelete: async (req, res,next) => {
+  postDelete: async (req, res) => {
     const id = req.params.id;
 
     try {
@@ -106,22 +106,18 @@ module.exports = {
         return res.status(404).json({
           success: false,
           message: "존재하지 않는 게시물"
-        });      
-      }
-
-      if (!post.imageId){
-        return res.status(200).json({
-          success: true,
-          message: "게시물 삭제 성공"
         });
       }
 
-      req.imageId = post.imageId
-      next();
+      return res.status(200).json({
+        success: true,
+        message: "게시물 삭제 성공"
+      });
+
     } catch (e) {
       return res.status(500).json({
         success: false,
-        error:e
+        error: e
       });
     }
   },

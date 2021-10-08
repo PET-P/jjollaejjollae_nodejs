@@ -56,9 +56,14 @@ module.exports = {
     }
   },
   userRead: async (req, res) => {
-    const id = req.params.id;
     try {
-      const user = await User.findById(id).select('_id admin accountType email nick repPetId pets').lean();
+      const userId = req.params.userId;
+
+      if (!userId)
+        return res.status(400).json({ success: false, message: "userId 없음" })
+      if (userId != req.userId)
+        return res.status(400).json({ success: false, message: "토큰 유효성 없음" })
+      const user = await User.findById(userId).select('_id admin accountType email nick repPetId pets').lean();
 
       user.pets.forEach(pet => {
         delete pet.createdAt
@@ -87,16 +92,14 @@ module.exports = {
     }
   },
   userUpdate: async (req, res) => {
-    const userId = req.params.userId;
-    console.log("hi")
-
-    if(!userId)
-      return res.status(400).json({success:false, message:"userId 없음"})
-    if(userId != req.userId)
-      return res.status(400).json({success:false, message:"토큰 유효성 없음"})
-
-
     try {
+      const userId = req.params.userId;
+
+      if (!userId)
+        return res.status(400).json({ success: false, message: "userId 없음" })
+      if (userId != req.userId)
+        return res.status(400).json({ success: false, message: "토큰 유효성 없음" })
+
       const user = await User.findByIdAndUpdate(userId, req.body, {
         new: true
       }).select('_id admin accountType email nick pets').lean();
@@ -108,7 +111,7 @@ module.exports = {
         });
       } else {
         const result = {};
-        for(key in req.body){
+        for (key in req.body) {
           result[key] = req.body[key]
         }
         return res.status(200).json({
@@ -126,10 +129,16 @@ module.exports = {
     }
   },
   userDelete: async (req, res) => {
-    const id = req.params.id;
-
     try {
-      const user = await User.findByIdAndDelete(id);
+      const userId = req.params.userId;
+
+      if (!userId)
+        return res.status(400).json({ success: false, message: "userId 없음" })
+      if (userId != req.userId)
+        return res.status(400).json({ success: false, message: "토큰 유효성 없음" })
+      const user = await User.findById(userId).select('_id admin accountType email nick repPetId pets').lean();
+
+      const user = await User.findByIdAndDelete(userId);
 
       if (!user) {
         return res.status(404).json({
@@ -150,7 +159,13 @@ module.exports = {
   },
   petRead: async (req, res) => {
     try {
-      const userId = req.params.id;
+      const userId = req.params.userId;
+      if (!userId)
+        return res.status(400).json({ success: false, message: "userId 없음" })
+      if (userId != req.userId)
+        return res.status(400).json({ success: false, message: "토큰 유효성 없음" })
+      const user = await User.findById(userId).select('_id admin accountType email nick repPetId pets').lean();
+
 
       const petResult = await User.findById(userId).select('pets').lean()
       console.log(petResult)
@@ -174,7 +189,13 @@ module.exports = {
   },
   petCreate: async (req, res) => {
     try {
-      const userId = req.params.id;
+      const userId = req.params.userId;
+      if (!userId)
+        return res.status(400).json({ success: false, message: "userId 없음" })
+      if (userId != req.userId)
+        return res.status(400).json({ success: false, message: "토큰 유효성 없음" })
+      const user = await User.findById(userId).select('_id admin accountType email nick repPetId pets').lean();
+
 
       const petCreateResult = await User.findOneAndUpdate({ _id: userId }, { $push: { pets: req.body } }, { new: true })
 
@@ -199,6 +220,12 @@ module.exports = {
   petUpdate: async (req, res) => {
     try {
       const { userId, petId } = req.params;
+      if (!userId)
+        return res.status(400).json({ success: false, message: "userId 없음" })
+      if (userId != req.userId)
+        return res.status(400).json({ success: false, message: "토큰 유효성 없음" })
+      const user = await User.findById(userId).select('_id admin accountType email nick repPetId pets').lean();
+
       var update = {};
 
       for (key in req.body) {

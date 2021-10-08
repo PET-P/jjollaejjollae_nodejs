@@ -50,7 +50,13 @@ module.exports = {
   },
   folderRead: async (req, res) => {
     try {
-      const wishlist = await Wishlist.findOne({ userId: req.params.userId });
+      const userId = req.params.userId;
+      if (!userId)
+        return res.status(400).json({ success: false, message: "userId 없음" })
+      if (userId != req.userId)
+        return res.status(400).json({ success: false, message: "토큰 유효성 없음" })
+
+      const wishlist = await Wishlist.findOne({ userId: userId });
 
       if (!wishlist) {
         return res.status(404).json({
@@ -73,8 +79,14 @@ module.exports = {
   },
   folderUpdate: async (req, res) => {
     try {
+      const userId = req.params.userId
+      if (!userId)
+        return res.status(400).json({ success: false, message: "userId 없음" })
+      if (userId != req.userId)
+        return res.status(400).json({ success: false, message: "토큰 유효성 없음" })
+
       const wishlist = await Wishlist.findOneAndUpdate(
-        { userId: req.params.userId, "folder._id": req.query.folderId },
+        { userId: userId, "folder._id": req.query.folderId },
         { $set: { "folder.$.name": req.body.name, "folder.$.startDate": req.body.startDate, "folder.$.endDate": req.body.endDate } },
         { new: true, runValidators: true, }
       );
@@ -100,8 +112,15 @@ module.exports = {
   },
   folderDelete: async (req, res) => {
     try {
+      const userId = req.params.userId
+      const userId = req.params.userId
+      if (!userId)
+        return res.status(400).json({ success: false, message: "userId 없음" })
+      if (userId != req.userId)
+        return res.status(400).json({ success: false, message: "토큰 유효성 없음" })
+
       const wishlist = await Wishlist.findOneAndUpdate(
-        { userId: req.params.userId },
+        { userId: userId },
         { $pull: { folder: { _id: req.query.folderId } } },
         { new: true }
       );
@@ -132,6 +151,13 @@ module.exports = {
   wishAdd: async (req, res) => {
     try {
       const { userId, placeId, folderId, region } = req.body;
+
+      const userId = req.params.userId
+      if (!userId)
+        return res.status(400).json({ success: false, message: "userId 없음" })
+      if (userId != req.userId)
+        return res.status(400).json({ success: false, message: "토큰 유효성 없음" })
+
       const wishlist = await Wishlist.findOneAndUpdate(
         { userId: userId, 'folder._id': folderId },
         { $push: { 'folder.$.contents': { $each: [placeId], $position: 0 }, total: { $each: [placeId], $position: 0 }, 'folder.$.regions': { $each: [region], $position: 0 } } },
@@ -161,6 +187,13 @@ module.exports = {
     try {
       const { placeId, folderId } = req.query;
       const userId = req.params.userId;
+
+      const userId = req.params.userId
+      if (!userId)
+        return res.status(400).json({ success: false, message: "userId 없음" })
+      if (userId != req.userId)
+        return res.status(400).json({ success: false, message: "토큰 유효성 없음" })
+
       const wishlist = await Wishlist.findOneAndUpdate(
         { userId: userId, 'folder._id': folderId },
         { $pull: { 'folder.$.contents': placeId, total: placeId } },
@@ -191,6 +224,12 @@ module.exports = {
     try {
       const userId = req.params.userId;
       const folderId = req.query.folderId;
+
+      const userId = req.params.userId
+      if (!userId)
+        return res.status(400).json({ success: false, message: "userId 없음" })
+      if (userId != req.userId)
+        return res.status(400).json({ success: false, message: "토큰 유효성 없음" })
 
       const folder = await Wishlist.findOne({ userId: userId, 'folder._id': folderId }, { 'folder.$': 1 }).populate('folder.contents')
 

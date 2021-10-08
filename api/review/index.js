@@ -2,14 +2,12 @@ const express = require("express");
 const router = express.Router();
 const ReviewController = require("./review");
 const image = require('../../middleware/image')
+const authJWT = require('../../middleware/authJWT');
 
-const multer = require('multer');
-const upload = multer({ storage: multer.memoryStorage() })
-
-router.post("/", upload.array('image'), image.saveMultiImage, ReviewController.reviewCreate);
+router.post("/", authJWT, ReviewController.reviewCreate);
 router.get("/", ReviewController.reviewList);
 router.get("/:id", ReviewController.reviewRead);
-router.patch("/:id", ReviewController.reviewUpdate);
-router.delete("/:id", ReviewController.reviewDelete, image.deleteMultiImage);
+router.patch("/:id",authJWT, ReviewController.reviewUpdate);
+router.delete("/:id",authJWT, ReviewController.reviewDelete);
 
 module.exports = router;

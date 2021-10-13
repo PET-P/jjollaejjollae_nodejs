@@ -8,11 +8,12 @@ const petSchema = new Schema({
   name: { type: String, required: true },
   age: { type: Number },
   sex: { type: String, required: true, enum: ['남', '여'] },
-  type: { type: String, enum: ['강아지', '고양이'] },
+  type: { type: String, required: true, enum: ['강아지', '고양이'] },
   breed: { type: String },
   size: { type: String, required: true, default: '소형', enum: ['소형', '중형', '대형'] },
   weight: { type: Number },
-  imageUrl: { type: String }
+  imageUrl: { type: String },
+  isRepresent: { type: Boolean, default: false, required: true }
 }, { timestamps: true });
 
 const userSchema = new Schema({
@@ -31,7 +32,6 @@ const userSchema = new Schema({
   nick: { type: String, required: true },
   phone: { type: String }, // required: true
   admin: { type: Boolean, required: true, default: false },
-  repPetId: { type: String },
   pets: [petSchema],
   tempPassword: { type: String, default: null, select: false }
 },

@@ -1,32 +1,34 @@
 const Place = require('../../models/place')
+const Keyword = require('../../models/keyword')
+const mongoose = require('mongoose')
 
 module.exports = {
   search: async (req, res) => {
     try {
       const regions = [
-        '서울특별시','서울시','서울',
-        '제주도', '제주',
-        '인천광역시','인천시', '인천',
-        '대전광역시','대전시', '대전',
-        '대구광역시','대구시', '대구',
-        '울산광역시','울산시', '울산',
-        '부산광역시','부산시', '부산',
-        '세종시', '세종',
-        '속초시','속초',
-        '강릉시','강릉',]
-      let keyword = req.query.keyword
+        '제주특별자치도', '제주도', '제주',
+        '부산광역시', '부산시', '부산',
+        '서울특별시', '서울시', '서울',
+        '강릉시', '강릉', '속초시', '속초', '강원도', '강원',
+        '경주시', '경주', '여수시', '여수',
+        '대구광역시', '대구시', '대구',]
+      const keyword = req.query.keyword
+
+      const keywordLog = new Keyword({ 'userId': (req.userId == null ? null : mongoose.Types.ObjectId(req.userId)), 'keyword': keyword });
+      await keywordLog.save();
+
       let region = ''
       for (r of regions) {
         if (keyword.indexOf(r) !== -1) {
-          region = r.substring(0,2)
-          keyword = keyword.replace(r,'')
+          region = r.substring(0, 2)
+          var key = keyword.replace(r, '').trim()
           break
         }
       }
 
-      let key = keyword.replace(/\s/gi, '')
       if (region === '') {
-        const searchQuery = { title: new RegExp(key) }
+        // console.log(keyword + '|' + keyword.replace(/\s/gi, ''))
+        const searchQuery = { title: new RegExp(keyword + '|' + keyword.replace(/\s/gi, '')) }
         const result = await Place.aggregate([
           { $match: searchQuery },
           {
@@ -44,41 +46,37 @@ module.exports = {
               category: 1,
               address: 1,
               reviewCount: { $size: '$reviews' },
-              reviewPoint: { $divide: [{ $avg: '$reviews.point' }, 2] }
+              reviewPoint: {
+                $cond: { if: { $eq: [{ $avg: '$reviews.point' }, null] }, then: 0, else: { $avg: '$reviews.point' } }
+              }
             }
           },
           {
             $sort: { reviewPoint: -1 }
           }
         ])
-        // const result = await Place.find({ title: new RegExp(key) }).select('_id title category reviewPoint reviewCount address')
-        // const temp2 = await Cafe.find({ title: new RegExp(key) }).select('_id title category reviewPoint reviewCount')
-        // const temp3 = await Restaurant.find({ title: new RegExp(key) }).select('_id title category reviewPoint reviewCount')
-        // const temp4 = await Spot.find({ title: new RegExp(key) }).select('_id title category reviewPoint reviewCount')
 
-        // const result = [
-        //   ...temp1,
-        //   ...temp2,
-        //   ...temp3,
-        //   ...temp4,
-        // ]
         res.status(200).json({
           success: true,
           message: '검색결과',
-          data: result
+          data: {
+            region: '없음',
+            result: result
+          }
         })
       } else {
-        // console.log(key)
-        // console.log(key + '|' + key.substring(key.indexOf(region) + region.length))
-        const searchQuery = {
-          $and: [{ title: new RegExp(key + '|' + key.substring(key.indexOf(region) + region.length)) },
-          { address: new RegExp(region) }]
-        }
-        // {
-        //   title: new RegExp(key + '|' + key.substring(key.indexOf(region) + region.length)),
-        //   'address[0]': new RegExp(region),
 
-        // }
+        if (key == '') {
+          var searchQuery = { address: new RegExp(region) };
+        } else {
+          var searchQuery = {
+            $and: [{ title: new RegExp(key + '|' + key.replace(/\s/gi, '') + '|' + keyword + '|' + keyword.replace(/\s/gi, '')) },
+            { address: new RegExp(region) }]
+          }
+        }
+        // console.log(key + '|' + key.replace(/\s/gi, '') + '|' + keyword + '|' + keyword.replace(/\s/gi, ''))
+        // console.log(keyword, region, key)
+        // console.log(searchQuery)
         const result = await Place.aggregate([
           { $match: searchQuery },
           {
@@ -96,28 +94,16 @@ module.exports = {
               category: 1,
               address: 1,
               reviewCount: { $size: '$reviews' },
-              reviewPoint: { $divide: [{ $avg: '$reviews.point' }, 2] }
+              reviewPoint: {
+                $cond: { if: { $eq: [{ $avg: '$reviews.point' }, null] }, then: 0, else: { $avg: '$reviews.point' } }
+              }
             }
           },
           {
             $sort: { reviewPoint: -1 }
           }
         ])
-        // const dupResult = await Place.find({ title: new RegExp(key + '|' + key.substring(key.indexOf(region) + region.length)) }).select('_id title category reviewPoint reviewCount address')
-        // const temp2 = await Cafe.find({ title: new RegExp(key + '|' + key.substring(key.indexOf(region) + region.length)) }).select('_id title category reviewPoint reviewCount address')
-        // const temp3 = await Restaurant.find({ title: new RegExp(key + '|' + key.substring(key.indexOf(region) + region.length)) }).select('_id title category reviewPoint reviewCount address')
-        // const temp4 = await Spot.find({ title: new RegExp(key + '|' + key.substring(key.indexOf(region) + region.length)) }).select('_id title category reviewPoint reviewCount address')
 
-        // const dupResult = [
-        //   ...temp1,
-        //   ...temp2,
-        //   ...temp3,
-        //   ...temp4,
-        // ]
-        // const set = new Set(dupResult)
-
-        // const result = new Array(...set)
-        // const result = dupResult
         result.sort((a, b) => {
           return b.reviewPoint - a.reviewPoint
         })
@@ -131,11 +117,12 @@ module.exports = {
         res.status(200).json({
           success: true,
           message: '검색결과',
-          data: result
+          data: {
+            region: region,
+            result: result
+          }
         })
       }
-
-
     } catch (e) {
       console.log(e)
       res.status(500).json({

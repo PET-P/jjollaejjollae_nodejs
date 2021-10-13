@@ -1,5 +1,6 @@
 const User = require("../../models/user");
 const Wishlist = require("../../models/wishlist");
+const mongoose = require('mongoose');
 const { sign, refresh } = require('../../middleware/jwt');
 
 module.exports = {
@@ -163,11 +164,9 @@ module.exports = {
         return res.status(400).json({ success: false, message: "userId 없음" })
       if (userId != req.userId)
         return res.status(400).json({ success: false, message: "토큰 유효성 없음" })
-      const user = await User.findById(userId).select('_id admin accountType email nick repPetId pets').lean();
-
 
       const petResult = await User.findById(userId).select('pets').lean()
-      console.log(petResult)
+
       petResult.pets.forEach(pet => {
         delete pet.createdAt
         delete pet.updatedAt
@@ -237,6 +236,63 @@ module.exports = {
       res.status(200).json({
         success: true,
         message: "반려동물 수정 성공",
+      });
+    } catch (e) {
+      res.status(500).json({
+        success: false,
+        error: e.message
+      });
+    }
+
+  },
+  petDelete: async (req, res) => {
+    try {
+      const { userId, petId } = req.params;
+      if (!userId)
+        return res.status(400).json({ success: false, message: "userId 없음" })
+      if (userId != req.userId)
+        return res.status(400).json({ success: false, message: "토큰 유효성 없음" })
+
+      const result = await User.findOneAndUpdate(
+        { _id: mongoose.Types.ObjectId(userId) },
+        { $pull: { pets: { _id: mongoose.Types.ObjectId(petId) } } },
+        { new: false }
+      ).select('-pets.createdAt -pets.updatedAt')
+      if (result.pets.length == 1) {
+        return res.status(200).json({
+          success: true,
+          message: "반려동물 삭제 성공",
+          data: []
+        });
+      }
+
+      for (i in result.pets) {
+        if (String(result.pets[i]._id) == petId && result.pets[i].isRepresent) {
+          const representResult = await User.findOneAndUpdate(
+            { _id: mongoose.Types.ObjectId(userId) },
+            { $set: { 'pets.0.isRepresent': true } },
+            { new: true }
+          ).select('-pets.createdAt -pets.updatedAt')
+
+          return res.status(200).json({
+            success: true,
+            message: "반려동물 삭제 성공",
+            data: representResult.pets
+          });
+        } else if (String(result.pets[i]._id) == petId && !result.pets[i].isRepresent) {
+          result.pets.splice(i, 1);
+
+          console.log(result)
+          return res.status(200).json({
+            success: true,
+            message: "반려동물 삭제 성공",
+            data: result.pets
+          });
+        }
+      }
+      return res.status(404).json({
+        success: false,
+        message: "반려동물 id를 확인해주세요.",
       });
     } catch (e) {
       res.status(500).json({

@@ -9,7 +9,7 @@ const likesSchema = new Schema({
   list2: [Schema.Types.ObjectId],
   count3: { type: Number, default: 0 },
   list3: [Schema.Types.ObjectId],
-}, { timestamps: true })
+})
 
 const reviewSchema = new Schema({
   category: { type: String, required: true },
@@ -18,7 +18,7 @@ const reviewSchema = new Schema({
   point: { type: Number, default: 10 },
   imagesUrl: [String],
   text: { type: String, required: true },
-  likes: likesSchema,
+  like: { type: likesSchema, default: () => ({}) },
   thumbnailId: { type: Schema.Types.ObjectId },
   satisfaction: [String],
 }, { timestamps: true });

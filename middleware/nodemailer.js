@@ -1,21 +1,23 @@
 const nodemailer = require('nodemailer')
-
+const { GMAIL_EMAIL, GMAIL_PASSWORD } = process.env;
 module.exports = {
   sendCode: async (code, email) => {
     try {
       let transport = nodemailer.createTransport({
-        host: "smtp.mailtrap.io",
-        port: 2525,
+        service: 'gmail',
+        host: "smtp.gmail.com",
+        port: 587,
+        secure: false,
         auth: {
-          user: "929eb51470f216",//dotenv 처리필요
-          pass: "e794866d610ef8" //dotenv 처리필요
+          user: GMAIL_EMAIL,
+          pass: GMAIL_PASSWORD
         }
       })
 
       let info = await transport.sendMail({
-        from: "ghwar100@gmail.com",
-        to: "f0c837ec7a-882864@inbox.mailtrap.io", // email
-        subject: "Hello ✔", // Subject line
+        from: `"ZOLLE Team" <${GMAIL_EMAIL}>`,
+        to: email,
+        subject: "안녕하세요 쫄래쫄래팀입니다! 새로운 비밀번호를 확인해주세요.✔", // Subject line
         html: code, // plain text body
       })
 

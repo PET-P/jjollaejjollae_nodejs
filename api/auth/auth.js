@@ -176,6 +176,7 @@ module.exports = {
         let tempPassword = generatePassword();
         let result = await sendCode(tempPassword, email)
 
+        console.log(result)
         if (result) {
           await User.findOneAndUpdate({ _id: user._id }, { tempPassword: tempPassword })
           res.status(200).json({

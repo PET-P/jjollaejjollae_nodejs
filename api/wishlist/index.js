@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const wishlistController = require("./wishlist");
-const authJWT = require('../../middleware/authJWT');
+const {authJWT} = require('../../middleware/authJWT');
 
 router.post("", wishlistController.folderCreate);
 router.get("", wishlistController.folderList);

@@ -39,9 +39,12 @@ const placeSchema = new Schema({
   icons: [String],
   location: {
     type: { type: String, default: 'Point' },
-    coordinates: []
+    coordinates: {
+      type: [Number],
+      required: true
+    }
   }
 }, { timestamps: true });
-
+placeSchema.index({ location: '2dsphere' });
 const Place = mongoose.model('Place', placeSchema);
 module.exports = Place;

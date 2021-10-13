@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const user = require('./user');
 const post = require('./post');
-const image = require('./image');
+const keyword = require('./keyword');
 const auth = require('./auth');
 const place = require('./place');
 const search = require('./search')
@@ -12,7 +12,7 @@ const wishlist = require('./wishlist');
 
 router.use('/users', user);
 router.use('/posts', post);
-router.use('/image', image);
+router.use('/keyword', keyword);
 router.use('/auth',auth);
 router.use('/places',place);
 router.use('/search',search);

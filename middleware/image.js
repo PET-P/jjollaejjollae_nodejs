@@ -1,4 +1,3 @@
-const Image = require('../models/image')
 
 module.exports = {
   saveImage: async (req, res, next) => {

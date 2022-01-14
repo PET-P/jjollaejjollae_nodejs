@@ -12,4 +12,5 @@ router.get("/", optionalAuthJWT, ReviewController.reviewList);
 // router.patch("/:id",authJWT, ReviewController.reviewUpdate);
 router.delete("/:id", authJWT, ReviewController.reviewDelete);
 
+router.post('/report', authJWT, ReviewController.reviewReport);
 module.exports = router;

@@ -22,7 +22,7 @@ const roomSchema = new Schema({
 }, { timestamps: true })
 
 const placeSchema = new Schema({
-  category: { type: String, enum: ['숙소', '카페', '식당', '관광지'], required: true },
+  category: { type: String, enum: ['숙소', '카페', '식당', '명소'], required: true },
   title: { type: String, trim: true, required: true },
   address: [String], // 0. 시/도 1. 시/군/구 2.읍/면/동 4.나머지
   description: { type: String },
@@ -31,7 +31,7 @@ const placeSchema = new Schema({
   // reviewPoint: { type: Number, default: 0 },
   // reviewCount: { type: Number, default: 0 },
   // topReview: [{ type: mongoose.Types.ObjectId, ref: 'Reveiw' }],
-  phone: { type: String, required: true },
+  phone: { type: String}, //required: true },
   imagesUrl: [String],
   types: [String],
   petFacilities: [String], //숙소 필터

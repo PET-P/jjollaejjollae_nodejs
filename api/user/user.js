@@ -42,7 +42,7 @@ module.exports = {
   },
   userList: async (req, res) => {
     try {
-      const users = await User.find({}).select('_id admin accountType email nick repPetId pets').lean();
+      const users = await User.find({}).select('_id admin accountType email nick repPetId pets password').lean();
 
       res.status(200).json({
         success: true,
@@ -71,8 +71,7 @@ module.exports = {
         delete pet.updatedAt
       })
 
-      console.log(user.pets[user.pets.length - 1])
-
+      // console.log(user.pets[user.pets.length - 1])
       if (!user) {
         return res.status(404).json({
           success: false,
@@ -192,19 +191,22 @@ module.exports = {
         return res.status(400).json({ success: false, message: "userId 없음" })
       if (userId != req.userId)
         return res.status(400).json({ success: false, message: "토큰 유효성 없음" })
-      const user = await User.findById(userId).select('_id admin accountType email nick repPetId pets').lean();
+      // const user = await User.findById(userId).select('_id admin accountType email nick repPetId pets').lean();
 
+      if (req.body.isRepresent == true){
+        const petSetToFalse = await User.findOneAndUpdate({ _id: userId }, { $set: { 'pets.$[].isRepresent': false } }, { new: true }).select('-pets.createdAt -pets.updatedAt');
+        console.log(petSetToFalse)
+      }
+      const petCreateResult = await User.findOneAndUpdate({ _id: userId }, { $push: { pets: req.body } }, { new: true }).select('-pets.createdAt -pets.updatedAt')
 
-      const petCreateResult = await User.findOneAndUpdate({ _id: userId }, { $push: { pets: req.body } }, { new: true })
-
-      let data = JSON.parse(JSON.stringify(petCreateResult.pets[petCreateResult.pets.length - 1]))
-      delete data.createdAt
-      delete data.updatedAt
+      // let data = JSON.parse(JSON.stringify(petCreateResult.pets[petCreateResult.pets.length - 1]))
+      // delete data.createdAt
+      // delete data.updatedAt
 
       res.status(200).json({
         success: true,
         message: "반려동물 등록 성공",
-        data: data
+        data: petCreateResult
       });
 
     } catch (e) {
@@ -218,11 +220,12 @@ module.exports = {
   petUpdate: async (req, res) => {
     try {
       const { userId, petId } = req.params;
+      // console.log(userId, req.userId)
       if (!userId)
         return res.status(400).json({ success: false, message: "userId 없음" })
       if (userId != req.userId)
         return res.status(400).json({ success: false, message: "토큰 유효성 없음" })
-      const user = await User.findById(userId).select('_id admin accountType email nick repPetId pets').lean();
+      // const user = await User.findById(userId).select('_id admin accountType email nick repPetId pets').lean();
 
       var update = {};
 
@@ -232,6 +235,16 @@ module.exports = {
       const petUpdateResult = await User.findOneAndUpdate(
         { _id: userId, 'pets._id': petId },
         { $set: update }, { new: true });
+
+      if (req.body.isRepresent == true) {
+        for (pet of petUpdateResult["pets"]) {
+          if (String(pet._id) != petId && pet.isRepresent == true) {
+            const repPetUpdate = await User.findOneAndUpdate(
+              { _id: userId, 'pets._id': pet._id },
+              { $set: { 'pets.$.isRepresent': false } }, { new: true });
+          }
+        }
+      }
 
       res.status(200).json({
         success: true,
@@ -282,7 +295,7 @@ module.exports = {
         } else if (String(result.pets[i]._id) == petId && !result.pets[i].isRepresent) {
           result.pets.splice(i, 1);
 
-          console.log(result)
+          // console.log(result)
           return res.status(200).json({
             success: true,
             message: "반려동물 삭제 성공",

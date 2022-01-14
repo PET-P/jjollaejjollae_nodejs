@@ -4,7 +4,7 @@ const userController = require("./user");
 const { authJWT } = require('../../middleware/authJWT');
 
 router.post("", userController.userCreate);
-router.get("", userController.userList);
+// router.get("", userController.userList);
 router.get("/:userId", authJWT, userController.userRead);
 router.patch("/:userId", authJWT, userController.userUpdate);
 router.delete("/:userId", authJWT, userController.userDelete);

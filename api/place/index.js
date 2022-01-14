@@ -7,8 +7,8 @@ router.post("",  placeController.placeCreate);
 router.get("", placeController.placeList);
 router.get("/near", placeController.nearPlaceList);
 router.get("/:id", placeController.placeRead);
-router.patch("/:id", placeController.placeUpdate);
-router.delete("/:id", placeController.placeDelete);
+// router.patch("/:id", placeController.placeUpdate);
+// router.delete("/:id", placeController.placeDelete);
 
 
 module.exports = router;

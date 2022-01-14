@@ -5,6 +5,7 @@ const User = require('../../models/user');
 const mongoose = require('mongoose')
 module.exports = {
   placeCreate: async (req, res) => {
+    // console.log(req.body)
     const place = new Place(req.body);
 
     try {
@@ -17,7 +18,7 @@ module.exports = {
           });
         }
         else {
-          res.status(200).json({
+          return res.status(200).json({
             success: true,
             message: "장소 등록 성공",
             data: doc
@@ -28,7 +29,7 @@ module.exports = {
 
     } catch (e) {
       console.log(e)
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         error: e
       });
@@ -36,14 +37,58 @@ module.exports = {
   },
   placeList: async (req, res) => {
     try {
-      const places = await Place.find({});
+      const { region, category, filter } = req.query
+      const searchQuery = { address: new RegExp(region), category: category };
+      const page = req.query.page == null ? 0 : req.query.page
+      // console.log(region, category, filter, page)
+      if (filter == '리뷰 많은순')
+        var sortParam = { reviewCount: -1, _id: -1 }
+      else if (filter == '최근 등록순')
+        var sortParam = { createAt: -1, _id: -1 }
+      else if (filter == '별점 높은순')
+        var sortParam = { reviewPoint: -1, _id: -1 }
+      else
+        return res.status(401).json({
+          success: false,
+          message: "존재하지 않는 필터입니다.",
+        });
+
+      const result = await Place.aggregate([
+        { $match: searchQuery },
+        {
+          $lookup: {
+            from: 'reviews',
+            localField: '_id',
+            foreignField: 'placeId',
+            as: 'reviews'
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            title: 1,
+            category: 1,
+            address: 1,
+            location: 1,
+            imagesUrl: 1,
+            reviewCount: { $size: '$reviews' },
+            reviewPoint: {
+              $cond: { if: { $eq: [{ $avg: '$reviews.point' }, null] }, then: 0, else: { $avg: '$reviews.point' } }
+            }
+          }
+        },
+        {
+          $sort: sortParam
+        }, { $skip: page * 6 }, { $limit: 6 }
+      ])
 
       res.status(200).json({
         success: true,
         message: "장소목록 조회 성공",
-        data: places
+        data: result
       });
     } catch (e) {
+      console.log(e)
       res.status(500).json({
         success: false,
         error: e
@@ -77,12 +122,15 @@ module.exports = {
             title: 1,
             category: 1,
             address: 1,
+            location: 1,
+            imagesUrl: 1,
             reviewCount: { $size: '$reviews' },
             reviewPoint: {
               $cond: { if: { $eq: [{ $avg: '$reviews.point' }, null] }, then: 0, else: { $avg: '$reviews.point' } }
             }
           }
-        }
+        },
+        { $limit: 3 }
       ])
       res.status(200).json({
         success: true,
@@ -104,6 +152,14 @@ module.exports = {
         {
           $lookup: {
             from: 'reviews',
+            localField: '_id',
+            foreignField: 'placeId',
+            as: 'totalReviews'
+          }
+        },
+        {
+          $lookup: {
+            from: 'reviews',
             let: {
               'placeId': '$_id'
             },
@@ -113,7 +169,7 @@ module.exports = {
               '$sort': { 'createdAt': -1 }
             }, {
               '$limit': 2
-            },
+            }
             ],
             as: 'reviews'
           }
@@ -142,7 +198,11 @@ module.exports = {
             'room._id': 1,
             'room.imageUrl': 1,
             'room.subDescription': 1,
-            icons: 1
+            icons: 1,
+            reviewCount: { $size: '$totalReviews' },
+            reviewPoint: {
+              $cond: { if: { $eq: [{ $avg: '$totalReviews.point' }, null] }, then: 0, else: { $avg: '$totalReviews.point' } }
+            },
           }
         }
       ]).exec();
@@ -236,5 +296,28 @@ module.exports = {
       });
     }
   },
+  placeListCategory: async (req, res) => {
+    const id = req.params.id;
 
+    try {
+      const place = await Place.findByIdAndDelete(id);
+
+      if (!place) {
+        return res.status(404).json({
+          success: false,
+          message: "존재하지 않는 장소"
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "장소삭제 성공"
+      });
+    } catch (e) {
+      res.status(500).json({
+        success: false,
+        error: e
+      });
+    }
+  },
 }

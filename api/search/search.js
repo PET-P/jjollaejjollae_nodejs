@@ -1,10 +1,14 @@
 const Place = require('../../models/place')
 const Keyword = require('../../models/keyword')
+const Wishlist = require('../../models/wishlist')
 const mongoose = require('mongoose')
 
 module.exports = {
   search: async (req, res) => {
     try {
+      const userIdFromJWT = req.userId
+      const page = req.query.page == null ? 0 : req.query.page
+
       const regions = [
         '제주특별자치도', '제주도', '제주',
         '부산광역시', '부산시', '부산',
@@ -45,22 +49,41 @@ module.exports = {
               title: 1,
               category: 1,
               address: 1,
+              location: 1,
+              imagesUrl: 1,
               reviewCount: { $size: '$reviews' },
               reviewPoint: {
                 $cond: { if: { $eq: [{ $avg: '$reviews.point' }, null] }, then: 0, else: { $avg: '$reviews.point' } }
-              }
+              },
             }
           },
           {
-            $sort: { reviewPoint: -1 }
-          }
+            $sort: { reviewPoint: -1, reviewCount: -1, _id: 1 }
+          },
+          { $skip: page * 6 }, { $limit: 6 }
         ])
 
+        const placeCount = await Place.countDocuments(searchQuery).exec();;
+
+        if (userIdFromJWT) {
+          const [wish] = await Wishlist.find({ userId: mongoose.Types.ObjectId(userIdFromJWT) })
+          result.forEach(r => {
+            r.isWish = false
+            for (w of wish.folder) {
+              if (w.contents.includes(r._id)) {
+                r.isWish = true
+                break
+              }
+            }
+          })
+        }
         res.status(200).json({
           success: true,
           message: '검색결과',
           data: {
             region: '없음',
+            regionCount: 0,
+            placeCount: placeCount,
             result: result
           }
         })
@@ -93,6 +116,8 @@ module.exports = {
               title: 1,
               category: 1,
               address: 1,
+              location: 1,
+              imagesUrl: 1,
               reviewCount: { $size: '$reviews' },
               reviewPoint: {
                 $cond: { if: { $eq: [{ $avg: '$reviews.point' }, null] }, then: 0, else: { $avg: '$reviews.point' } }
@@ -100,26 +125,34 @@ module.exports = {
             }
           },
           {
-            $sort: { reviewPoint: -1 }
-          }
+            $sort: { reviewPoint: -1, reviewCount: -1, _id: 1 }
+          }, { $skip: page * 6 }, { $limit: 6 }
         ])
+        const regionCount = await Place.countDocuments({ address: new RegExp(region) }).exec();
 
-        result.sort((a, b) => {
-          return b.reviewPoint - a.reviewPoint
-        })
+        const placeCount = await Place.countDocuments(searchQuery).exec();
 
-        result.sort((a, b) => {
-          if ((a.address[0].indexOf(region) != -1 || a.address[1].indexOf(region) != -1) && (b.address[0].indexOf(region) == -1 && b.address[1].indexOf(region) == -1)) { return -1; }
-          else if ((a.address[0].indexOf(region) == -1 && a.address[1].indexOf(region) == -1) && (b.address[0].indexOf(region) != -1 || b.address[1].indexOf(region) != -1)) { return 1; }
-          else { return 0; }
-        })
-
+        if (userIdFromJWT) {
+          const [wish] = await Wishlist.find({ userId: mongoose.Types.ObjectId(userIdFromJWT) })
+          result.forEach(r => {
+            r.isWish = false
+            for (w of wish.folder) {
+              if (w.contents.includes(r._id)) {
+                r.isWish = true
+                break
+              }
+            }
+          })
+        }
         res.status(200).json({
           success: true,
           message: '검색결과',
           data: {
             region: region,
+            regionCount: regionCount,
+            placeCount: placeCount,
             result: result
+
           }
         })
       }
@@ -130,8 +163,5 @@ module.exports = {
         message: e
       })
     }
-
   }
-
 }
-

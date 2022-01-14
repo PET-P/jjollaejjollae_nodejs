@@ -9,14 +9,16 @@ const { sign, verify, refresh, refreshVerify } = require('../../middleware/jwt')
 module.exports = {
   socialAuth: async (req, res) => {
     try {
-      const email = req.body.email;
-      let user = await User.findOne({ email: email }).select('_id email accountType').lean()
+      const { email, accountType } = req.body;
+      let user = await User.findOne({ email: email, accountType: accountType }).select('_id email accountType').lean()
+      // console.log(user)
+
       if (!user) {
         let keyOne = crypto.randomBytes(256).toString('hex').substr(100, 10);
         let keyTwo = crypto.randomBytes(256).toString('base64').substr(50, 10);
         req.body.password = keyOne + keyTwo;
 
-        req.body.accountType = 'social';
+        // req.body.accountType = 'social';
         user = new User(req.body)
 
         await user.save(async (err, doc) => {
@@ -45,7 +47,7 @@ module.exports = {
             });
           }
         });
-      } else if (user.accountType === 'social') {
+      } else if (['naver', 'kakao', 'apple'].includes(user.accountType)) {
         const accessToken = sign(user);
         const refreshToken = refresh(user.email);
 

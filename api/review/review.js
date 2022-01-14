@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const Review = require("../../models/review");
 const Place = require("../../models/place");
+const Report = require('../../models/report');
 
 module.exports = {
   reviewCreate: async (req, res) => {
@@ -16,6 +17,7 @@ module.exports = {
       if (userId != req.userId)
         return res.status(400).json({ success: false, message: "토큰 유효성 없음" })
 
+      // console.log(userId, req.userId)
       const review = new Review(req.body);
       await review.save(async (err, doc) => {
         if (err) {
@@ -52,7 +54,7 @@ module.exports = {
       const reviewId = req.params.id
       const userId = req.userId
       const option = req.body.option
-      console.log(userId)
+      // console.log(userId)
       if (!reviewId)
         return res.status(400).json({ success: false, message: "reviewId 없음" })
 
@@ -66,7 +68,7 @@ module.exports = {
 
       return res.status(200).json({
         success: true,
-        message: reviewLikeResult,
+        message: "리뷰 좋아요 성공",
       });
 
     } catch (e) {
@@ -101,7 +103,7 @@ module.exports = {
 
       return res.status(200).json({
         success: true,
-        message: reviewLikeDeleteResult,
+        message: "리뷰 좋아요 취소",
       });
 
     } catch (e) {
@@ -116,10 +118,20 @@ module.exports = {
     try {
       const { userId } = req.query;
       const { placeId, category } = req.query;
-
+      const userIdFromJWT = req.userId
+      // console.log(userIdFromJWT)
       if (placeId) {
         const [reviewInfo] = await Review.aggregate([
           { $match: { placeId: mongoose.Types.ObjectId(placeId) } },
+          {
+            $lookup: {
+              from: 'users',
+              localField: 'userId',
+              foreignField: '_id',
+              as: 'user'
+            }
+          },
+          { $unwind: '$user' },
           { $group: { _id: null, totalReview: { $sum: 1 }, totalPoint: { $sum: "$point" } } },
           { $addFields: { avgPoint: { $divide: ["$totalPoint", "$totalReview"] } } },
           {
@@ -163,6 +175,7 @@ module.exports = {
                 point: 1,
                 imagesUrl: 1,
                 satisfaction: 1,
+                text: 1,
                 likeCnt: {
                   $sum: [
                     { $size: "$like.list1" },
@@ -172,9 +185,9 @@ module.exports = {
                 },
                 isLike: {
                   $or: [
-                    { $in: [mongoose.Types.ObjectId(userId), "$like.list1"] },
-                    { $in: [mongoose.Types.ObjectId(userId), "$like.list2"] },
-                    { $in: [mongoose.Types.ObjectId(userId), "$like.list3"] }
+                    { $in: [mongoose.Types.ObjectId(req.userId), "$like.list1"] },
+                    { $in: [mongoose.Types.ObjectId(req.userId), "$like.list2"] },
+                    { $in: [mongoose.Types.ObjectId(req.userId), "$like.list3"] }
                   ]
                 },
                 createdAt: 1,
@@ -215,6 +228,7 @@ module.exports = {
                 point: 1,
                 imagesUrl: 1,
                 satisfaction: 1,
+                text: 1,
                 likeCnt: {
                   $sum: [
                     { $size: "$like.list1" },
@@ -227,12 +241,25 @@ module.exports = {
             }
           ]).exec();
         }
+        if (reviewInfo) {
+          delete reviewInfo._id
+          reviewInfo.reviews = reviews
+          return res.status(200).json({
+            success: true,
+            message: "특정장소의 리뷰목록 조회 성공",
+            data: reviewInfo
+          });
+        }
+        else {
+          const zeroResult = { totalReview: 0, avgPoint: 0, reviews: [] }
+          return res.status(200).json({
+            success: true,
+            message: "특정장소의 리뷰목록 조회 성공(리뷰 없음)",
+            data: zeroResult
+          });
+        }
 
-        return res.status(200).json({
-          success: true,
-          message: "특정장소의 리뷰목록 조회 성공",
-          data: reviews
-        });
+
       } else if (userId) {
 
         const [reviewInfo] = await Review.aggregate([
@@ -249,6 +276,13 @@ module.exports = {
           }
         ]
         );
+        if (!reviewInfo) {
+          return res.status(200).json({
+            success: true,
+            message: "특정유저의 리뷰목록 조회 성공",
+            data: { totalReview: 0, totalLike: 0, reviews: [] }
+          });
+        }
         const reviews = await Review.aggregate([
           { $match: { userId: mongoose.Types.ObjectId(userId) } },
           {
@@ -266,6 +300,7 @@ module.exports = {
               point: 1,
               imagesUrl: 1,
               satisfaction: 1,
+              text: 1,
               likeCnt: [{ $size: '$like.list1' }, { $size: '$like.list2' }, { $size: '$like.list3' }],
               'place._id': 1,
               'place.title': 1,
@@ -273,8 +308,9 @@ module.exports = {
             }
           }
         ]).exec();
+        // console.log(reviewInfo, reviews)
         delete reviewInfo._id
-        reviewInfo.reviws = reviews
+        reviewInfo.reviews = reviews
 
         return res.status(200).json({
           success: true,
@@ -383,4 +419,39 @@ module.exports = {
       });
     }
   },
+  reviewReport: async (req, res) => {
+    try {
+      const userId = req.userId
+      const { reviewId, option } = req.body
+
+      if (!reviewId)
+        return res.status(400).json({ success: false, message: "reviewId 없음" })
+      if (!option)
+        return res.status(400).json({ success: false, message: "option 없음" })
+      if (!userId)
+        return res.status(400).json({ success: false, message: "userId 없음" })
+
+      const report = new Report({ userId, reviewId, option });
+      await report.save(async (err, doc) => {
+        if (err) {
+          return res.status(500).json({
+            success: false,
+            error: err
+          });
+        }
+        else {
+          return res.status(200).json({
+            success: true,
+            message: "신고 완료",
+          });
+        }
+      });
+    } catch (e) {
+      console.log(e)
+      res.status(500).json({
+        success: false,
+        error: e
+      });
+    }
+  }
 }

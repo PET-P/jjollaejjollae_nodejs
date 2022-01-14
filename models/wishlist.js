@@ -22,7 +22,7 @@ const wishlistSchema = new Schema({
 wishlistSchema.pre('save', function (next) {
   let wishlist = this;
 
-  wishlist.folder.push({ name: 'Default Folder' })
+  wishlist.folder.push({ name: '나만의 위시리스트' })
   next();
 })
 

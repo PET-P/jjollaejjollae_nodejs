@@ -89,13 +89,17 @@ module.exports = {
       if (req.headers.authorization && req.headers.refresh) {
         const authToken = req.headers.authorization.split('Bearer ')[1];
         const refreshToken = req.headers.refresh;
-
+        
         // access token 검증 -> expired여야 함.
         const authResult = verify(authToken);
 
         // access token 디코딩하여 user의 정보를 가져옵니다.f
         const decoded = jwt.decode(authToken);
 
+        console.log(authToken)
+        console.log(refreshToken)
+        console.log(authResult)
+        console.log(decoded)
         // 디코딩 결과가 없으면 권한이 없음을 응답.
         if (decoded === null) {
           return res.status(400).send({
@@ -143,8 +147,8 @@ module.exports = {
           }
         } else {
           // 3. access token이 만료되지 않은경우 => refresh 할 필요가 없습니다.
-          res.status(400).send({
-            success: false,
+          res.status(200).send({
+            success: true,
             message: 'Access token is not expired!',
             data: {
               userId: decoded.userId
@@ -174,9 +178,10 @@ module.exports = {
       }
       else {
         let tempPassword = generatePassword();
+        // console.log(tempPassword)
         let result = await sendCode(tempPassword, email)
 
-        console.log(result)
+        // console.log(result)
         if (result) {
           await User.findOneAndUpdate({ _id: user._id }, { tempPassword: tempPassword })
           res.status(200).json({

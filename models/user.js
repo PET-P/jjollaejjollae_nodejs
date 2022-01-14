@@ -17,12 +17,11 @@ const petSchema = new Schema({
 }, { timestamps: true });
 
 const userSchema = new Schema({
-  accountType: { type: String, enum: ['local', 'social'], required: true },
+  accountType: { type: String, enum: ['local', 'naver', 'kakao', 'apple'], required: true },
   email: {
     type: String,
     required: true,
-    trim: true,
-    unique: true
+    trim: true
   },
   password: {
     type: String,
